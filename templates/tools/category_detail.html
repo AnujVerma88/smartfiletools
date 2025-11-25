@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} Tools - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="category-page">
+    <div class="container">
+        <!-- Category Hero -->
+        <section class="category-hero">
+            <div class="category-hero-icon">
+                <i class="{{ category.icon|default:'fas fa-folder' }}"></i>
+            </div>
+            <h1>{{ category.name }}</h1>
+            <p class="lead">{{ category.description }}</p>
+            <div class="category-stats">
+                <span><i class="fas fa-tools"></i> {{ tools.count }} tools available</span>
+            </div>
+        </section>
+
+        <!-- Tools Grid -->
+        {% if tools %}
+        <section class="category-tools">
+            <div class="tools-grid">
+                {% for tool in tools %}
+                <div class="tool-card">
+                    <a href="{% url 'tools:tool_detail' slug=tool.slug %}">
+                        <div class="tool-icon">
+                            <i class="{{ tool.icon|default:'fas fa-file' }}"></i>
+                        </div>
+                        <h3>{{ tool.name }}</h3>
+                        <p>{{ tool.description }}</p>
+                        
+                        <div class="tool-meta">
+                            <span class="usage-count">
+                                <i class="fas fa-users"></i> {{ tool.usage_count|default:0 }}
+                            </span>
+                            {% if tool.is_premium %}
+                            <span class="premium-badge">Premium</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>No tools available</h3>
+            <p>Tools in this category are coming soon!</p>
+        </div>
+        {% endif %}
+
+        <!-- How It Works -->
+        <section class="how-it-works">
+            <h2>How It Works</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Choose Tool</h3>
+                    <p>Select the tool you need from the list above</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Upload File</h3>
+                    <p>Drag and drop or browse to upload your file</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Process</h3>
+                    <p>Our servers process your file securely</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h3>Download</h3>
+                    <p>Download your converted file instantly</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Other Categories -->
+        <section class="other-categories">
+            <h2>Explore Other Categories</h2>
+            <div class="categories-grid">
+                {% for cat in categories %}
+                    {% if cat.slug != category.slug %}
+                    <a href="{% url 'tools:category_detail' slug=cat.slug %}" class="category-card">
+                        <div class="category-icon">
+                            <i class="{{ cat.icon|default:'fas fa-folder' }}"></i>
+                        </div>
+                        <h3>{{ cat.name }}</h3>
+                        <p>{{ cat.description }}</p>
+                        <span class="tool-count">{{ cat.tools.count }} tools</span>
+                    </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

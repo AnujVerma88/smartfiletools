@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Help Center - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="help-page">
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="help-hero">
+            <h1>Help Center</h1>
+            <p class="lead">Find answers to your questions and learn how to use SmartToolPDF</p>
+            
+            <div class="help-search">
+                <input type="text" placeholder="Search for help..." id="helpSearch">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+        </section>
+
+        <!-- Quick Links -->
+        <section class="quick-links">
+            <h2>Popular Topics</h2>
+            <div class="quick-links-grid">
+                <a href="#getting-started" class="quick-link-card">
+                    <i class="fas fa-rocket"></i>
+                    <h3>Getting Started</h3>
+                    <p>Learn the basics of using SmartToolPDF</p>
+                </a>
+                
+                <a href="#file-conversion" class="quick-link-card">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h3>File Conversion</h3>
+                    <p>How to convert files between formats</p>
+                </a>
+                
+                <a href="#account-management" class="quick-link-card">
+                    <i class="fas fa-user-cog"></i>
+                    <h3>Account Management</h3>
+                    <p>Manage your account and settings</p>
+                </a>
+                
+                <a href="#troubleshooting" class="quick-link-card">
+                    <i class="fas fa-tools"></i>
+                    <h3>Troubleshooting</h3>
+                    <p>Fix common issues and errors</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Getting Started -->
+        <section class="help-section" id="getting-started">
+            <h2>Getting Started</h2>
+            
+            <div class="help-article">
+                <h3>How to Create an Account</h3>
+                <ol>
+                    <li>Click the "Sign Up" button in the top right corner</li>
+                    <li>Enter your email address and create a password</li>
+                    <li>Verify your email address by clicking the link sent to your inbox</li>
+                    <li>Start converting files immediately!</li>
+                </ol>
+            </div>
+            
+            <div class="help-article">
+                <h3>Understanding Free vs Premium</h3>
+                <p><strong>Free Account:</strong></p>
+                <ul>
+                    <li>10 conversions per day</li>
+                    <li>Maximum file size: 10MB</li>
+                    <li>All conversion tools available</li>
+                    <li>Standard processing speed</li>
+                </ul>
+                <p><strong>Premium Account:</strong></p>
+                <ul>
+                    <li>Unlimited conversions</li>
+                    <li>Maximum file size: 500MB</li>
+                    <li>Priority processing</li>
+                    <li>Ad-free experience</li>
+                    <li>Priority support</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- File Conversion -->
+        <section class="help-section" id="file-conversion">
+            <h2>File Conversion</h2>
+            
+            <div class="help-article">
+                <h3>How to Convert a File</h3>
+                <ol>
+                    <li>Select the conversion tool you need (e.g., PDF to DOCX)</li>
+                    <li>Click "Choose File" or drag and drop your file</li>
+                    <li>Wait for the file to upload</li>
+                    <li>Click "Convert" to start the conversion</li>
+                    <li>Download your converted file when ready</li>
+                </ol>
+            </div>
+            
+            <div class="help-article">
+                <h3>Supported File Formats</h3>
+                <p><strong>Document Formats:</strong> PDF, DOCX, XLSX, PPTX, TXT</p>
+                <p><strong>Image Formats:</strong> JPG, PNG, GIF, BMP, TIFF, WebP</p>
+                <p><strong>Video Formats:</strong> MP4, AVI, MOV, WMV</p>
+            </div>
+            
+            <div class="help-article">
+                <h3>File Size Limits</h3>
+                <ul>
+                    <li><strong>Free Users:</strong> Up to 10MB per file</li>
+                    <li><strong>Premium Users:</strong> Up to 500MB per file</li>
+                    <li><strong>Enterprise Users:</strong> Custom limits available</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Account Management -->
+        <section class="help-section" id="account-management">
+            <h2>Account Management</h2>
+            
+            <div class="help-article">
+                <h3>How to Update Your Profile</h3>
+                <ol>
+                    <li>Log in to your account</li>
+                    <li>Click on your avatar in the top right corner</li>
+                    <li>Select "Profile" from the dropdown menu</li>
+                    <li>Update your information and click "Save Changes"</li>
+                </ol>
+            </div>
+            
+            <div class="help-article">
+                <h3>How to Change Your Password</h3>
+                <ol>
+                    <li>Go to your Profile page</li>
+                    <li>Click "Change Password"</li>
+                    <li>Enter your current password</li>
+                    <li>Enter and confirm your new password</li>
+                    <li>Click "Update Password"</li>
+                </ol>
+            </div>
+            
+            <div class="help-article">
+                <h3>How to Upgrade to Premium</h3>
+                <ol>
+                    <li>Visit the <a href="{% url 'dashboard:pricing' %}">Pricing page</a></li>
+                    <li>Select the Premium plan</li>
+                    <li>Enter your payment information</li>
+                    <li>Confirm your subscription</li>
+                    <li>Start enjoying unlimited conversions!</li>
+                </ol>
+            </div>
+            
+            <div class="help-article">
+                <h3>How to Cancel Your Subscription</h3>
+                <ol>
+                    <li>Go to your Dashboard</li>
+                    <li>Click "Subscription Settings"</li>
+                    <li>Click "Cancel Subscription"</li>
+                    <li>Confirm cancellation</li>
+                    <li>Your access will continue until the end of your billing period</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Troubleshooting -->
+        <section class="help-section" id="troubleshooting">
+            <h2>Troubleshooting</h2>
+            
+            <div class="help-article">
+                <h3>Conversion Failed - What to Do?</h3>
+                <p>If your conversion fails, try these steps:</p>
+                <ol>
+                    <li>Check that your file is not corrupted</li>
+                    <li>Verify the file format is supported</li>
+                    <li>Ensure the file size is within limits</li>
+                    <li>Try converting again</li>
+                    <li>If the problem persists, <a href="{% url 'dashboard:contact' %}">contact support</a></li>
+                </ol>
+            </div>
+            
+            <div class="help-article">
+                <h3>File Upload Not Working</h3>
+                <p>If you can't upload files:</p>
+                <ul>
+                    <li>Check your internet connection</li>
+                    <li>Try a different browser</li>
+                    <li>Clear your browser cache and cookies</li>
+                    <li>Disable browser extensions temporarily</li>
+                    <li>Try uploading a smaller file first</li>
+                </ul>
+            </div>
+            
+            <div class="help-article">
+                <h3>Download Not Starting</h3>
+                <p>If your download doesn't start:</p>
+                <ul>
+                    <li>Check your browser's download settings</li>
+                    <li>Disable pop-up blockers</li>
+                    <li>Try right-clicking and selecting "Save As"</li>
+                    <li>Use a different browser</li>
+                </ul>
+            </div>
+            
+            <div class="help-article">
+                <h3>Quality Issues with Converted Files</h3>
+                <p>If your converted file has quality issues:</p>
+                <ul>
+                    <li>Ensure your original file is high quality</li>
+                    <li>Try converting with different settings</li>
+                    <li>Check if the source file has the same issues</li>
+                    <li>For images, try a different format</li>
+                    <li>Contact support for assistance with specific files</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Still Need Help -->
+        <section class="help-cta">
+            <h2>Still Need Help?</h2>
+            <p>Can't find what you're looking for? Our support team is here to help.</p>
+            <div class="help-cta-buttons">
+                <a href="{% url 'dashboard:contact' %}" class="btn btn-primary">Contact Support</a>
+                <a href="{% url 'dashboard:faq' %}" class="btn btn-secondary">View FAQ</a>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

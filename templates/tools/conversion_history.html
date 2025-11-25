@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Conversion History - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 0;">
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1>Conversion History</h1>
+        <p style="color: #6B7280;">View and manage your file conversions</p>
+    </div>
+
+    {% if conversions %}
+    <div class="conversions-table-container" style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
+        <table class="conversions-table" style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #F9FAFB; border-bottom: 2px solid #E5E7EB;">
+                <tr>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">File</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Type</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Status</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Date</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151;">Size</th>
+                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conversion in conversions %}
+                <tr style="border-bottom: 1px solid #E5E7EB;">
+                    <td style="padding: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 40px; height: 40px; background: #F3F4F6; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-file" style="color: #14B8A6; font-size: 1.25rem;"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 500; color: #111827;">
+                                    {{ conversion.input_file.name|default:"Unknown" }}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 1rem;">
+                        <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #E0F2FE; color: #0369A1; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                            {{ conversion.get_tool_type_display }}
+                        </span>
+                    </td>
+                    <td style="padding: 1rem;">
+                        {% if conversion.status == 'completed' %}
+                        <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; background: #D1FAE5; color: #065F46; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                            <i class="fas fa-check-circle"></i> Completed
+                        </span>
+                        {% elif conversion.status == 'processing' %}
+                        <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; background: #FEF3C7; color: #92400E; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                            <i class="fas fa-spinner fa-spin"></i> Processing
+                        </span>
+                        {% elif conversion.status == 'failed' %}
+                        <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; background: #FEE2E2; color: #991B1B; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                            <i class="fas fa-times-circle"></i> Failed
+                        </span>
+                        {% else %}
+                        <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0.75rem; background: #E5E7EB; color: #374151; border-radius: 9999px; font-size: 0.875rem; font-weight: 500;">
+                            {{ conversion.status|title }}
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem; color: #6B7280; font-size: 0.875rem;">
+                        {{ conversion.created_at|date:"M d, Y" }}<br>
+                        <span style="color: #9CA3AF; font-size: 0.75rem;">{{ conversion.created_at|time:"g:i A" }}</span>
+                    </td>
+                    <td style="padding: 1rem; color: #6B7280; font-size: 0.875rem;">
+                        {% if conversion.file_size_before %}
+                            {{ conversion.file_size_before|filesizeformat }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem; text-align: center;">
+                        <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                            {% if conversion.status == 'completed' %}
+                            <a href="{% url 'tools:file_download' conversion.id %}" 
+                               class="btn-action" 
+                               style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #14B8A6; color: white; border-radius: 6px; text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: all 0.3s ease;">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                            {% elif conversion.status == 'processing' %}
+                            <a href="{% url 'tools:conversion_status' conversion.id %}" 
+                               class="btn-action" 
+                               style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #6B7280; color: white; border-radius: 6px; text-decoration: none; font-size: 0.875rem; font-weight: 500;">
+                                <i class="fas fa-eye"></i> View Status
+                            </a>
+                            {% elif conversion.status == 'failed' %}
+                            <a href="{% url 'tools:conversion_detail' conversion.id %}" 
+                               class="btn-action" 
+                               style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #EF4444; color: white; border-radius: 6px; text-decoration: none; font-size: 0.875rem; font-weight: 500;">
+                                <i class="fas fa-info-circle"></i> Details
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state" style="text-align: center; padding: 4rem 2rem; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <i class="fas fa-history" style="font-size: 4rem; color: #D1D5DB; margin-bottom: 1rem;"></i>
+        <h2 style="color: #374151; margin-bottom: 0.5rem;">No Conversion History</h2>
+        <p style="color: #6B7280; margin-bottom: 2rem;">You haven't converted any files yet. Start by choosing a tool!</p>
+        <a href="{% url 'tools:tool_list' %}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #14B8A6; color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            <i class="fas fa-tools"></i> Browse Tools
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    .conversions-table-container {
+        overflow-x: auto;
+    }
+    
+    .conversions-table {
+        min-width: 800px;
+    }
+}
+</style>
+{% endblock %}

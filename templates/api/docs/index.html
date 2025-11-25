@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}API Documentation - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="api-docs">
+    <div class="docs-sidebar">
+        <div class="sidebar-content">
+            <h3>Documentation</h3>
+            <nav class="docs-nav">
+                <a href="#introduction" class="nav-link active">Introduction</a>
+                <a href="#authentication" class="nav-link">Authentication</a>
+                <a href="#quickstart" class="nav-link">Quick Start</a>
+                <a href="#endpoints" class="nav-link">API Endpoints</a>
+                <a href="#webhooks" class="nav-link">Webhooks</a>
+                <a href="#rate-limits" class="nav-link">Rate Limits</a>
+                <a href="#errors" class="nav-link">Error Handling</a>
+                <a href="#code-examples" class="nav-link">Code Examples</a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="docs-content">
+        <!-- Introduction -->
+        <section id="introduction" class="docs-section">
+            <h1>SmartToolPDF API Documentation</h1>
+            <p class="lead">
+                Welcome to the SmartToolPDF API! Our API allows you to integrate powerful file conversion 
+                capabilities into your applications.
+            </p>
+            
+            <div class="info-box">
+                <h4>Base URL</h4>
+                <code>https://smarttoolpdf.com/api/v1</code>
+            </div>
+
+            <h3>Features</h3>
+            <ul>
+                <li>PDF to DOCX, XLSX, PPTX conversion</li>
+                <li>Document to PDF conversion</li>
+                <li>PDF manipulation (merge, split, compress)</li>
+                <li>Image processing and conversion</li>
+                <li>Video compression</li>
+                <li>Webhook notifications</li>
+            </ul>
+        </section>
+
+
+        <!-- Authentication -->
+        <section id="authentication" class="docs-section">
+            <h2>Authentication</h2>
+            <p>All API requests require authentication using an API key.</p>
+
+            <h3>Getting Your API Key</h3>
+            <ol>
+                <li>Request API access at <a href="/api/access/">/api/access/</a></li>
+                <li>Wait for approval (1-2 business days)</li>
+                <li>Receive your API key and secret via email</li>
+            </ol>
+
+            <h3>Using Your API Key</h3>
+            <p>Include your API key in the request header:</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Authorization Header</span>
+                </div>
+                <pre><code>Authorization: Bearer YOUR_API_KEY</code></pre>
+            </div>
+
+            <p>Or use the X-API-Key header:</p>
+            <div class="code-block">
+                <pre><code>X-API-Key: YOUR_API_KEY</code></pre>
+            </div>
+        </section>
+
+        <!-- Quick Start -->
+        <section id="quickstart" class="docs-section">
+            <h2>Quick Start</h2>
+            <p>Get started with the SmartToolPDF API in minutes.</p>
+
+            <h3>1. Convert PDF to DOCX</h3>
+            <div class="code-block">
+                <div class="code-header">
+                    <span>cURL</span>
+                </div>
+                <pre><code>curl -X POST https://smarttoolpdf.com/api/v1/convert/pdf-to-docx \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "file=@document.pdf"</code></pre>
+            </div>
+
+            <h3>2. Check Conversion Status</h3>
+            <div class="code-block">
+                <pre><code>curl https://smarttoolpdf.com/api/v1/conversions/CONVERSION_ID \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+            </div>
+
+            <h3>3. Download Result</h3>
+            <div class="code-block">
+                <pre><code>curl https://smarttoolpdf.com/api/v1/conversions/CONVERSION_ID/download \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -o converted.docx</code></pre>
+            </div>
+        </section>
+

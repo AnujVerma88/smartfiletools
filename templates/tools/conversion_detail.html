@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Conversion Details - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 0;">
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <a href="{% url 'tools:conversion_history' %}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: #14B8A6; text-decoration: none; margin-bottom: 1rem; font-weight: 500;">
+            <i class="fas fa-arrow-left"></i> Back to History
+        </a>
+        <h1>Conversion Details</h1>
+    </div>
+
+    <div class="conversion-detail-card" style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
+        <!-- Status Header -->
+        <div class="detail-header" style="padding: 2rem; border-bottom: 1px solid #E5E7EB;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="margin: 0 0 0.5rem 0; color: #111827;">{{ conversion.get_tool_type_display }}</h2>
+                    <p style="margin: 0; color: #6B7280; font-size: 0.875rem;">
+                        Created on {{ conversion.created_at|date:"F d, Y" }} at {{ conversion.created_at|time:"g:i A" }}
+                    </p>
+                </div>
+                <div>
+                    {% if conversion.status == 'completed' %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #D1FAE5; color: #065F46; border-radius: 9999px; font-weight: 600;">
+                        <i class="fas fa-check-circle"></i> Completed
+                    </span>
+                    {% elif conversion.status == 'processing' %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #FEF3C7; color: #92400E; border-radius: 9999px; font-weight: 600;">
+                        <i class="fas fa-spinner fa-spin"></i> Processing
+                    </span>
+                    {% elif conversion.status == 'failed' %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #FEE2E2; color: #991B1B; border-radius: 9999px; font-weight: 600;">
+                        <i class="fas fa-times-circle"></i> Failed
+                    </span>
+                    {% else %}
+                    <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #E5E7EB; color: #374151; border-radius: 9999px; font-weight: 600;">
+                        {{ conversion.status|title }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="detail-grid" style="padding: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+            <!-- Input File -->
+            <div class="detail-item">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <div style="width: 48px; height: 48px; background: #F3F4F6; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-file-upload" style="color: #14B8A6; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 0.875rem; color: #6B7280; font-weight: 500;">Input File</h3>
+                        <p style="margin: 0; font-size: 1rem; color: #111827; font-weight: 600;">
+                            {{ conversion.input_file.name|default:"Unknown" }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Size -->
+            {% if conversion.file_size_before %}
+            <div class="detail-item">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <div style="width: 48px; height: 48px; background: #F3F4F6; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-hdd" style="color: #3B82F6; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 0.875rem; color: #6B7280; font-weight: 500;">File Size</h3>
+                        <p style="margin: 0; font-size: 1rem; color: #111827; font-weight: 600;">
+                            {{ conversion.file_size_before|filesizeformat }}
+                            {% if conversion.file_size_after %}
+                                → {{ conversion.file_size_after|filesizeformat }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Processing Time -->
+            {% if conversion.processing_time %}
+            <div class="detail-item">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <div style="width: 48px; height: 48px; background: #F3F4F6; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-clock" style="color: #F59E0B; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 0.875rem; color: #6B7280; font-weight: 500;">Processing Time</h3>
+                        <p style="margin: 0; font-size: 1rem; color: #111827; font-weight: 600;">
+                            {{ conversion.processing_time|floatformat:2 }}s
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Compression Ratio -->
+            {% if conversion.get_compression_ratio %}
+            <div class="detail-item">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <div style="width: 48px; height: 48px; background: #F3F4F6; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-compress" style="color: #10B981; font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 0.875rem; color: #6B7280; font-weight: 500;">Compression</h3>
+                        <p style="margin: 0; font-size: 1rem; color: #111827; font-weight: 600;">
+                            {{ conversion.get_compression_ratio|floatformat:1 }}%
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Error Message -->
+        {% if conversion.status == 'failed' and conversion.error_message %}
+        <div style="padding: 0 2rem 2rem 2rem;">
+            <div style="padding: 1rem; background: #FEE2E2; border-left: 4px solid #EF4444; border-radius: 8px;">
+                <h3 style="margin: 0 0 0.5rem 0; color: #991B1B; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-exclamation-triangle"></i> Error Details
+                </h3>
+                <p style="margin: 0; color: #7F1D1D; font-size: 0.875rem;">
+                    {{ conversion.error_message }}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div style="padding: 2rem; border-top: 1px solid #E5E7EB; background: #F9FAFB;">
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                {% if conversion.status == 'completed' %}
+                <a href="{% url 'tools:file_download' conversion.id %}" 
+                   class="btn btn-primary" 
+                   style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #14B8A6; color: white; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;">
+                    <i class="fas fa-download"></i> Download File
+                </a>
+                {% elif conversion.status == 'processing' %}
+                <a href="{% url 'tools:conversion_status' conversion.id %}" 
+                   class="btn btn-primary" 
+                   style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #6B7280; color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                    <i class="fas fa-eye"></i> View Status
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'tools:conversion_history' %}" 
+                   class="btn btn-secondary" 
+                   style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: white; color: #374151; border: 2px solid #E5E7EB; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;">
+                    <i class="fas fa-list"></i> Back to History
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    .detail-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+{% endblock %}

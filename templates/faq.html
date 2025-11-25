@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FAQ - Frequently Asked Questions - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="faq-page">
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="faq-hero">
+            <h1>Frequently Asked Questions</h1>
+            <p class="lead">Quick answers to common questions about SmartToolPDF</p>
+        </section>
+
+        <!-- FAQ Categories -->
+        <div class="faq-categories">
+            <button class="faq-category-btn active" data-category="all">All Questions</button>
+            <button class="faq-category-btn" data-category="general">General</button>
+            <button class="faq-category-btn" data-category="account">Account</button>
+            <button class="faq-category-btn" data-category="conversion">Conversion</button>
+            <button class="faq-category-btn" data-category="pricing">Pricing</button>
+            <button class="faq-category-btn" data-category="security">Security</button>
+        </div>
+
+        <!-- FAQ Items -->
+        <div class="faq-content">
+            <!-- General Questions -->
+            <div class="faq-item" data-category="general">
+                <div class="faq-question">
+                    <h3>What is SmartToolPDF?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>SmartToolPDF is an online platform that provides free and premium tools for converting, compressing, and editing PDF files and other document formats. No software installation required - everything works directly in your browser.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="general">
+                <div class="faq-question">
+                    <h3>Do I need to install any software?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>No! SmartToolPDF is completely web-based. All you need is a modern web browser and an internet connection. You can access our tools from any device - Windows, Mac, Linux, or mobile.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="general">
+                <div class="faq-question">
+                    <h3>Which file formats do you support?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>We support a wide range of formats including:</p>
+                    <ul>
+                        <li><strong>Documents:</strong> PDF, DOCX, XLSX, PPTX, TXT</li>
+                        <li><strong>Images:</strong> JPG, PNG, GIF, BMP, TIFF, WebP</li>
+                        <li><strong>Videos:</strong> MP4, AVI, MOV, WMV</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Account Questions -->
+            <div class="faq-item" data-category="account">
+                <div class="faq-question">
+                    <h3>Do I need an account to use SmartToolPDF?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>You can use some basic features without an account, but creating a free account gives you access to conversion history, higher daily limits, and the ability to upgrade to Premium for unlimited conversions.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="account">
+                <div class="faq-question">
+                    <h3>How do I reset my password?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Click "Forgot Password" on the login page, enter your email address, and we'll send you a password reset link. Follow the instructions in the email to create a new password.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="account">
+                <div class="faq-question">
+                    <h3>Can I delete my account?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes, you can delete your account at any time from your Profile settings. Please note that this action is permanent and will delete all your conversion history and data.</p>
+                </div>
+            </div>
+
+            <!-- Conversion Questions -->
+            <div class="faq-item" data-category="conversion">
+                <div class="faq-question">
+                    <h3>How long does a conversion take?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Most conversions complete within 30 seconds to 2 minutes, depending on file size and complexity. Premium users get priority processing for faster conversions.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="conversion">
+                <div class="faq-question">
+                    <h3>What's the maximum file size I can upload?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Free users can upload files up to 10MB. Premium users can upload files up to 500MB. Enterprise customers can request custom file size limits.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="conversion">
+                <div class="faq-question">
+                    <h3>Why did my conversion fail?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Conversions can fail for several reasons:</p>
+                    <ul>
+                        <li>The file is corrupted or password-protected</li>
+                        <li>The file format is not supported</li>
+                        <li>The file size exceeds your account limit</li>
+                        <li>The file contains unsupported features</li>
+                    </ul>
+                    <p>If you continue to experience issues, please <a href="{% url 'dashboard:contact' %}">contact our support team</a>.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="conversion">
+                <div class="faq-question">
+                    <h3>Can I convert multiple files at once?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Currently, you need to convert files one at a time. However, Premium users can queue multiple conversions and they'll be processed with priority. Batch conversion is coming soon!</p>
+                </div>
+            </div>
+
+            <!-- Pricing Questions -->
+            <div class="faq-item" data-category="pricing">
+                <div class="faq-question">
+                    <h3>Is SmartToolPDF really free?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes! Our free plan includes 10 conversions per day with files up to 10MB. This is perfect for occasional use. For unlimited conversions and larger files, check out our <a href="{% url 'dashboard:pricing' %}">Premium plan</a>.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="pricing">
+                <div class="faq-question">
+                    <h3>How much does Premium cost?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Premium costs $9.99/month and includes unlimited conversions, files up to 500MB, priority processing, and an ad-free experience. Visit our <a href="{% url 'dashboard:pricing' %}">Pricing page</a> for more details.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="pricing">
+                <div class="faq-question">
+                    <h3>Can I cancel my subscription anytime?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes, you can cancel your Premium subscription at any time with no cancellation fees. Your access will continue until the end of your current billing period.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="pricing">
+                <div class="faq-question">
+                    <h3>Do you offer refunds?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes, we offer a 30-day money-back guarantee. If you're not satisfied with Premium, contact us within 30 days of your purchase for a full refund.</p>
+                </div>
+            </div>
+
+            <!-- Security Questions -->
+            <div class="faq-item" data-category="security">
+                <div class="faq-question">
+                    <h3>Are my files secure?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Yes! All files are encrypted during upload and processing. We use industry-standard SSL/TLS encryption to protect your data. Files are automatically deleted from our servers after 24 hours.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="security">
+                <div class="faq-question">
+                    <h3>What happens to my files after conversion?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>All uploaded and converted files are automatically deleted from our servers after 24 hours. We do not store, share, or use your files for any purpose other than the conversion you requested.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="security">
+                <div class="faq-question">
+                    <h3>Do you share my files with third parties?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>No, never. We do not share, sell, or distribute your files to any third parties. Your files are processed on our secure servers and are only accessible to you. Read our <a href="{% url 'dashboard:privacy' %}">Privacy Policy</a> for more details.</p>
+                </div>
+            </div>
+
+            <div class="faq-item" data-category="security">
+                <div class="faq-question">
+                    <h3>Can I convert password-protected files?</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    <p>Currently, we cannot process password-protected or encrypted files. Please remove the password protection before uploading. This feature may be added in the future.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Still Have Questions -->
+        <section class="faq-cta">
+            <h2>Still Have Questions?</h2>
+            <p>Can't find the answer you're looking for? We're here to help!</p>
+            <div class="faq-cta-buttons">
+                <a href="{% url 'dashboard:contact' %}" class="btn btn-primary">Contact Support</a>
+                <a href="{% url 'dashboard:help' %}" class="btn btn-secondary">Visit Help Center</a>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+// FAQ Accordion
+document.querySelectorAll('.faq-question').forEach(question => {
+    question.addEventListener('click', () => {
+        const item = question.parentElement;
+        const isActive = item.classList.contains('active');
+        
+        // Close all items
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+        
+        // Open clicked item if it wasn't active
+        if (!isActive) {
+            item.classList.add('active');
+        }
+    });
+});
+
+// Category Filter
+document.querySelectorAll('.faq-category-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const category = btn.dataset.category;
+        
+        // Update active button
+        document.querySelectorAll('.faq-category-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Filter items
+        document.querySelectorAll('.faq-item').forEach(item => {
+            if (category === 'all' || item.dataset.category === category) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

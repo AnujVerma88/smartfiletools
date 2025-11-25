@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sign Up - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1>Create Account</h1>
+                    <p>Join SmartToolPDF and start converting files</p>
+                </div>
+
+                <form method="post" class="auth-form">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            Email Address
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <div class="form-error">
+                            {{ form.email.errors }}
+                        </div>
+                        {% endif %}
+                        <small class="form-text">We'll use this for your account</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label">
+                            Password
+                        </label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                        <div class="form-error">
+                            {{ form.password1.errors }}
+                        </div>
+                        {% endif %}
+                        <small class="form-text">Must be at least 8 characters</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">
+                            Confirm Password
+                        </label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                        <div class="form-error">
+                            {{ form.password2.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" id="terms" name="terms" class="form-check-input" required>
+                        <label for="terms" class="form-check-label">
+                            I agree to the <a href="{% url 'dashboard:terms' %}" target="_blank">Terms of Service</a> 
+                            and <a href="{% url 'dashboard:privacy' %}" target="_blank">Privacy Policy</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </form>
+
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+
+                <div class="social-login-buttons">
+                    <button type="button" class="btn-social btn-google">
+                        <i class="fab fa-google"></i>
+                        Sign up with Google
+                    </button>
+                    <button type="button" class="btn-social btn-facebook">
+                        <i class="fab fa-facebook"></i>
+                        Sign up with Facebook
+                    </button>
+                </div>
+
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="{% url 'accounts:login' %}">Log in</a></p>
+                </div>
+            </div>
+
+            <div class="auth-benefits">
+                <h2>What You Get</h2>
+                <div class="benefit-list">
+                    <div class="benefit-item">
+                        <i class="fas fa-gift"></i>
+                        <div>
+                            <h3>Free Account</h3>
+                            <p>10 conversions per day with files up to 10MB</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-history"></i>
+                        <div>
+                            <h3>Conversion History</h3>
+                            <p>Access your past conversions anytime</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <h3>Secure & Private</h3>
+                            <p>Your files are encrypted and auto-deleted</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-crown"></i>
+                        <div>
+                            <h3>Upgrade Anytime</h3>
+                            <p>Get unlimited conversions with Premium</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

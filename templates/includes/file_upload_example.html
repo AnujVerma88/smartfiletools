@@ -1,0 +1,318 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Interface - SmartToolPDF</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            padding: 2rem 0;
+            background-color: var(--light);
+        }
+        .demo-section {
+            margin-bottom: 3rem;
+        }
+        .demo-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--gray-900);
+        }
+        .demo-description {
+            text-align: center;
+            color: var(--gray-600);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .feature-description {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="demo-section">
+            <h1 class="demo-title">Mobile-Optimized File Upload Interface</h1>
+            <p class="demo-description">
+                A comprehensive, touch-friendly file upload component with drag-and-drop support,
+                real-time progress tracking, and mobile optimization.
+            </p>
+        </div>
+
+        <!-- Features Overview -->
+        <div class="demo-section">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Key Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-hand-pointer"></i>
+                    </div>
+                    <div class="feature-title">Touch-Friendly</div>
+                    <div class="feature-description">
+                        All interactive elements meet 44x44px minimum touch target size for easy mobile use
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-arrows-alt"></i>
+                    </div>
+                    <div class="feature-title">Drag & Drop</div>
+                    <div class="feature-description">
+                        Intuitive drag-and-drop interface with visual feedback and hover states
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="feature-title">Progress Tracking</div>
+                    <div class="feature-description">
+                        Real-time upload progress with animated progress bar and percentage display
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="feature-title">Mobile Optimized</div>
+                    <div class="feature-description">
+                        Responsive design that works perfectly on phones, tablets, and desktops
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="feature-title">File Validation</div>
+                    <div class="feature-description">
+                        Automatic validation of file size and format with clear error messages
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-universal-access"></i>
+                    </div>
+                    <div class="feature-title">Accessible</div>
+                    <div class="feature-description">
+                        Full keyboard navigation and screen reader support with ARIA labels
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Demo -->
+        <div class="demo-section">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Live Demo</h2>
+            
+            <!-- Simulated Tool Object -->
+            <div class="file-upload-container">
+                <div class="file-upload-zone" id="fileUploadZone" 
+                     data-max-size="50"
+                     data-accepted-formats=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                     aria-label="File upload area">
+                    
+                    <div class="file-upload-icon" aria-hidden="true">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    
+                    <div class="file-upload-text">
+                        Drag & Drop Your File Here
+                    </div>
+                    
+                    <div class="file-upload-hint">
+                        or <strong>tap to browse</strong> from your device
+                        <br>
+                        Maximum file size: <strong>50MB</strong>
+                    </div>
+                    
+                    <button type="button" class="file-upload-browse-btn" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-folder-open"></i>
+                        <span>Browse Files</span>
+                    </button>
+                    
+                    <input type="file" 
+                           id="fileInput" 
+                           class="file-input"
+                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                           aria-label="File input">
+                </div>
+                
+                <!-- Supported Formats Info -->
+                <div class="file-format-info">
+                    <div class="file-format-info-title">
+                        <i class="fas fa-info-circle"></i> Supported Formats
+                    </div>
+                    <div class="file-format-list">
+                        <span class="file-format-badge">PDF</span>
+                        <span class="file-format-badge">DOC</span>
+                        <span class="file-format-badge">DOCX</span>
+                        <span class="file-format-badge">JPG</span>
+                        <span class="file-format-badge">JPEG</span>
+                        <span class="file-format-badge">PNG</span>
+                    </div>
+                </div>
+                
+                <!-- Selected File Display -->
+                <div class="file-selected" id="fileSelected" style="display: none;">
+                    <div class="file-selected-header">
+                        <div class="file-selected-info">
+                            <div class="file-icon">
+                                <i class="fas fa-file" id="fileIconType"></i>
+                            </div>
+                            <div class="file-details">
+                                <div class="file-name" id="fileName">filename.pdf</div>
+                                <div class="file-size" id="fileSize">0 MB</div>
+                            </div>
+                        </div>
+                        <button type="button" class="file-remove-btn" id="fileRemoveBtn" aria-label="Remove file">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Upload Progress -->
+                    <div class="upload-progress" id="uploadProgress" style="display: none;">
+                        <div class="upload-progress-header">
+                            <span class="upload-progress-label">Uploading...</span>
+                            <span class="upload-progress-percentage" id="uploadPercentage">0%</span>
+                        </div>
+                        <div class="upload-progress-bar-container">
+                            <div class="upload-progress-bar" id="uploadProgressBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Upload Status -->
+                    <div class="upload-status success" id="uploadStatus" style="display: none;">
+                        <i class="fas fa-check-circle upload-status-icon"></i>
+                        <span id="uploadStatusText">File uploaded successfully!</span>
+                    </div>
+                </div>
+                
+                <!-- Error Message -->
+                <div class="file-upload-error" id="fileUploadError" style="display: none;">
+                    <i class="fas fa-exclamation-triangle file-upload-error-icon"></i>
+                    <span id="fileUploadErrorText">Error message here</span>
+                </div>
+                
+                <!-- Convert Button -->
+                <button type="button" class="convert-btn" id="convertBtn" style="display: none;" disabled onclick="simulateUpload()">
+                    <i class="fas fa-sync-alt convert-btn-icon"></i>
+                    <span>Convert File</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Usage Instructions -->
+        <div class="demo-section">
+            <h2 style="text-align: center; margin-bottom: 2rem;">How to Use</h2>
+            <div style="max-width: 600px; margin: 0 auto;">
+                <ol style="line-height: 2;">
+                    <li><strong>Desktop:</strong> Drag a file onto the upload zone or click "Browse Files"</li>
+                    <li><strong>Mobile:</strong> Tap the upload zone or "Browse Files" button</li>
+                    <li>Select a file from your device (PDF, DOC, DOCX, JPG, JPEG, or PNG)</li>
+                    <li>Review the file information displayed</li>
+                    <li>Click "Convert File" to start the upload</li>
+                    <li>Watch the progress bar as your file uploads</li>
+                    <li>Get redirected to the conversion status page</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Technical Details -->
+        <div class="demo-section">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Technical Details</h2>
+            <div style="max-width: 800px; margin: 0 auto; background: white; padding: 2rem; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <h3>Requirements Met</h3>
+                <ul style="line-height: 2;">
+                    <li>✅ <strong>9.1:</strong> Drag-and-drop interface for file uploads</li>
+                    <li>✅ <strong>9.2:</strong> File picker button as alternative upload method</li>
+                    <li>✅ <strong>9.5:</strong> Upload progress with percentage indicator</li>
+                    <li>✅ <strong>18.3:</strong> Touch-optimized file upload interfaces</li>
+                    <li>✅ <strong>18.7:</strong> Clear progress indicators on small screens</li>
+                </ul>
+
+                <h3 style="margin-top: 2rem;">Browser Support</h3>
+                <ul style="line-height: 2;">
+                    <li>✅ Chrome/Edge (latest)</li>
+                    <li>✅ Firefox (latest)</li>
+                    <li>✅ Safari (latest)</li>
+                    <li>✅ iOS Safari 12+</li>
+                    <li>✅ Chrome Mobile (latest)</li>
+                </ul>
+
+                <h3 style="margin-top: 2rem;">Accessibility</h3>
+                <ul style="line-height: 2;">
+                    <li>✅ ARIA labels for screen readers</li>
+                    <li>✅ Keyboard navigation support</li>
+                    <li>✅ Focus indicators</li>
+                    <li>✅ Semantic HTML structure</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/file-upload.js' %}"></script>
+    <script>
+        // Simulate upload for demo purposes
+        function simulateUpload() {
+            const progressBar = document.getElementById('uploadProgressBar');
+            const percentage = document.getElementById('uploadPercentage');
+            const progress = document.getElementById('uploadProgress');
+            const status = document.getElementById('uploadStatus');
+            const statusText = document.getElementById('uploadStatusText');
+            const convertBtn = document.getElementById('convertBtn');
+            
+            progress.style.display = 'block';
+            convertBtn.disabled = true;
+            
+            let currentProgress = 0;
+            const interval = setInterval(() => {
+                currentProgress += 5;
+                progressBar.style.width = currentProgress + '%';
+                percentage.textContent = currentProgress + '%';
+                
+                if (currentProgress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        progress.style.display = 'none';
+                        status.className = 'upload-status success';
+                        status.style.display = 'flex';
+                        statusText.textContent = 'File uploaded successfully! (Demo mode - no actual upload)';
+                    }, 500);
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,702 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="merchant-page">
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <div>
+                <h1>API Keys</h1>
+                <p>Manage your API keys for accessing SmartToolPDF API</p>
+            </div>
+            <button class="btn btn-primary" onclick="showCreateKeyModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Create New Key
+            </button>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- New API Key Display (if just created) -->
+        {% if request.session.new_api_key %}
+            <div class="credentials-alert">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-content">
+                    <h3>Save Your API Credentials</h3>
+                    <p>Make sure to copy your API key and secret now. You won't be able to see them again!</p>
+                    
+                    <div class="credential-box">
+                        <label>API Key:</label>
+                        <div class="credential-value">
+                            <code id="api-key">{{ request.session.new_api_key.key }}</code>
+                            <button onclick="copyToClipboard('api-key')" class="btn-copy">Copy</button>
+                        </div>
+                    </div>
+                    
+                    <div class="credential-box">
+                        <label>API Secret:</label>
+                        <div class="credential-value">
+                            <code id="api-secret">{{ request.session.new_api_key.secret }}</code>
+                            <button onclick="copyToClipboard('api-secret')" class="btn-copy">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- API Keys List -->
+        <div class="keys-grid">
+            {% for key in api_keys %}
+                <div class="key-card {% if not key.is_active %}inactive{% endif %}">
+                    <div class="key-header">
+                        <div>
+                            <h3>{{ key.name }}</h3>
+                            <span class="badge badge-{{ key.environment }}">{{ key.get_environment_display }}</span>
+                            {% if not key.is_active %}
+                                <span class="badge badge-inactive">Revoked</span>
+                            {% endif %}
+                        </div>
+                        <div class="key-actions">
+                            <button class="btn-icon" onclick="toggleKeyMenu({{ key.id }})" title="More actions">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="1"></circle>
+                                    <circle cx="12" cy="5" r="1"></circle>
+                                    <circle cx="12" cy="19" r="1"></circle>
+                                </svg>
+                            </button>
+                            <div class="key-menu" id="key-menu-{{ key.id }}" style="display: none;">
+                                {% if key.is_active %}
+                                    <form method="post" action="{% url 'api:merchant_api_key_regenerate' key.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="menu-item" onclick="return confirm('Are you sure? This will invalidate the current key.')">
+                                            Regenerate
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'api:merchant_api_key_revoke' key.id %}" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="menu-item danger" onclick="return confirm('Are you sure you want to revoke this key?')">
+                                            Revoke
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                <form method="post" action="{% url 'api:merchant_api_key_delete' key.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="menu-item danger" onclick="return confirm('Are you sure? This action cannot be undone.')">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="key-details">
+                        <div class="detail-row">
+                            <span class="label">Key Prefix:</span>
+                            <code>{{ key.key_prefix }}...</code>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Created:</span>
+                            <span>{{ key.created_at|date:"M d, Y" }}</span>
+                        </div>
+                        {% if key.last_used_at %}
+                            <div class="detail-row">
+                                <span class="label">Last Used:</span>
+                                <span>{{ key.last_used_at|date:"M d, Y H:i" }}</span>
+                            </div>
+                        {% else %}
+                            <div class="detail-row">
+                                <span class="label">Last Used:</span>
+                                <span class="text-muted">Never</span>
+                            </div>
+                        {% endif %}
+                        {% if key.expires_at %}
+                            <div class="detail-row">
+                                <span class="label">Expires:</span>
+                                <span>{{ key.expires_at|date:"M d, Y" }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <h3>No API Keys Yet</h3>
+                    <p>Create your first API key to start using the SmartToolPDF API.</p>
+                    <button class="btn btn-primary" onclick="showCreateKeyModal()">Create API Key</button>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <h2>About API Keys</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>🔒 Security</h3>
+                    <p>API keys are hashed and stored securely. Never share your API secret with anyone.</p>
+                </div>
+                <div class="info-card">
+                    <h3>🔄 Regeneration</h3>
+                    <p>You can regenerate keys at any time. The old key will be immediately invalidated.</p>
+                </div>
+                <div class="info-card">
+                    <h3>🌍 Environments</h3>
+                    <p>Use sandbox keys for testing and production keys for live applications.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Key Modal -->
+<div id="createKeyModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Create New API Key</h2>
+            <button onclick="hideCreateKeyModal()" class="btn-close">&times;</button>
+        </div>
+        <form method="post" action="{% url 'api:merchant_api_key_create' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="key-name">Key Name</label>
+                    <input type="text" id="key-name" name="name" class="form-control" placeholder="e.g., Production Key" required>
+                    <small>A descriptive name to help you identify this key</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="environment">Environment</label>
+                    <select id="environment" name="environment" class="form-control" required>
+                        <option value="production">Production</option>
+                        <option value="sandbox">Sandbox (Testing)</option>
+                    </select>
+                    <small>Choose the environment for this key</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="hideCreateKeyModal()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Key</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.merchant-page {
+    background-color: #f9fafb;
+    min-height: 100vh;
+    padding: 40px 0;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.page-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.page-header p {
+    color: #6b7280;
+    margin: 0;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--color-primary, #14B8A6);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0F766E;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+.messages {
+    margin-bottom: 24px;
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.alert-success {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
+.alert-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+.credentials-alert {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #fbbf24;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+    display: flex;
+    gap: 20px;
+}
+
+.alert-icon {
+    font-size: 2rem;
+}
+
+.alert-content h3 {
+    color: #92400e;
+    margin: 0 0 8px 0;
+}
+
+.alert-content p {
+    color: #78350f;
+    margin: 0 0 16px 0;
+}
+
+.credential-box {
+    margin-bottom: 16px;
+}
+
+.credential-box label {
+    display: block;
+    font-weight: 600;
+    color: #92400e;
+    margin-bottom: 8px;
+}
+
+.credential-value {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.credential-value code {
+    flex: 1;
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.875rem;
+    word-break: break-all;
+}
+
+.btn-copy {
+    padding: 8px 16px;
+    background-color: #92400e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-copy:hover {
+    background-color: #78350f;
+}
+
+.keys-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 24px;
+    margin-bottom: 48px;
+}
+
+.key-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s;
+}
+
+.key-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.key-card.inactive {
+    opacity: 0.6;
+}
+
+.key-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.key-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.badge-production {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.badge-sandbox {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.key-actions {
+    position: relative;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #6b7280;
+}
+
+.btn-icon:hover {
+    color: #1f2937;
+}
+
+.key-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 150px;
+    z-index: 10;
+}
+
+.menu-item {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    color: #1f2937;
+    font-size: 0.875rem;
+}
+
+.menu-item:hover {
+    background-color: #f3f4f6;
+}
+
+.menu-item.danger {
+    color: #dc2626;
+}
+
+.key-details {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 16px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.875rem;
+}
+
+.detail-row .label {
+    color: #6b7280;
+}
+
+.detail-row code {
+    background-color: #f3f4f6;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.text-muted {
+    color: #9ca3af;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state svg {
+    color: #d1d5db;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    color: #6b7280;
+    margin-bottom: 24px;
+}
+
+.info-section {
+    margin-top: 48px;
+}
+
+.info-section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 24px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+}
+
+.info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.info-card h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.info-card p {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6b7280;
+}
+
+.btn-close:hover {
+    color: #1f2937;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary, #14B8A6);
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .keys-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function showCreateKeyModal() {
+    document.getElementById('createKeyModal').style.display = 'flex';
+}
+
+function hideCreateKeyModal() {
+    document.getElementById('createKeyModal').style.display = 'none';
+}
+
+function toggleKeyMenu(keyId) {
+    const menu = document.getElementById('key-menu-' + keyId);
+    const allMenus = document.querySelectorAll('.key-menu');
+    
+    // Close all other menus
+    allMenus.forEach(m => {
+        if (m !== menu) m.style.display = 'none';
+    });
+    
+    // Toggle this menu
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    const text = element.textContent;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        // Show feedback
+        const btn = element.nextElementSibling;
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.backgroundColor = '#059669';
+        
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.backgroundColor = '';
+        }, 2000);
+    });
+}
+
+// Close menus when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.key-actions')) {
+        document.querySelectorAll('.key-menu').forEach(menu => {
+            menu.style.display = 'none';
+        });
+    }
+});
+
+// Close modal when clicking outside
+document.getElementById('createKeyModal')?.addEventListener('click', function(event) {
+    if (event.target === this) {
+        hideCreateKeyModal();
+    }
+});
+</script>
+{% endblock %}

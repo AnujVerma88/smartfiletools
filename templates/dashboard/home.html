@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}SmartToolPDF - Free Online PDF & File Conversion Tools{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Your Smart Solution for PDF & File Conversions</h1>
+            <p class="hero-subtitle">Convert, compress, and edit files online - Fast, secure, and free</p>
+            
+            <!-- Search Bar -->
+            <form action="{% url 'dashboard:search' %}" method="get" class="hero-search">
+                <input type="text" name="q" placeholder="Search for a tool..." />
+                <button type="submit">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </form>
+            
+            <!-- CTA Buttons -->
+            <div class="hero-cta">
+                <a href="{% url 'tools:tool_list' %}" class="btn btn-primary">Browse All Tools</a>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'accounts:register' %}" class="btn btn-secondary">Get Started Free</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tool Categories Section -->
+<section class="categories-section">
+    <div class="container">
+        <h2 class="section-title">Popular Tool Categories</h2>
+        <div class="categories-grid">
+            {% for category in categories %}
+            <div class="category-card">
+                <a href="{% url 'tools:category_detail' slug=category.slug %}">
+                    <div class="category-icon">
+                        {% if category.icon %}
+                            <i class="{{ category.icon }}"></i>
+                        {% else %}
+                            <i class="fas fa-tools"></i>
+                        {% endif %}
+                    </div>
+                    <h3>{{ category.name }}</h3>
+                    <p>{{ category.description|truncatewords:15 }}</p>
+                    <span class="tool-count">{{ category.tools.count }} tools</span>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Tools Section -->
+<section class="featured-tools-section">
+    <div class="container">
+        <h2 class="section-title">Popular Tools</h2>
+        <div class="tools-grid">
+            {% for tool in featured_tools %}
+            <div class="tool-card">
+                <a href="{% url 'tools:tool_detail' slug=tool.slug %}">
+                    <div class="tool-icon">
+                        {% if tool.icon %}
+                            <i class="{{ tool.icon }}"></i>
+                        {% else %}
+                            <i class="fas fa-file"></i>
+                        {% endif %}
+                    </div>
+                    <h3>{{ tool.name }}</h3>
+                    <p>{{ tool.description|truncatewords:12 }}</p>
+                    {% if tool.is_premium %}
+                    <span class="premium-badge">Premium</span>
+                    {% endif %}
+                    <div class="tool-meta">
+                        <span class="usage-count">
+                            <i class="fas fa-users"></i> {{ tool.usage_count }} uses
+                        </span>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center">
+            <a href="{% url 'tools:tool_list' %}" class="btn btn-outline">View All Tools</a>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works-section">
+    <div class="container">
+        <h2 class="section-title">How It Works</h2>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div class="step-icon">
+                    <i class="fas fa-upload"></i>
+                </div>
+                <h3>Upload Your File</h3>
+                <p>Select or drag and drop your file. We support all major formats.</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <h3>We Process It</h3>
+                <p>Our smart tools convert, compress, or edit your file automatically.</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div class="step-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <h3>Download Result</h3>
+                <p>Get your processed file instantly. Files are deleted after 24 hours.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+{% if total_conversions %}
+<section class="stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_conversions|default:0 }}</div>
+                <div class="stat-label">Files Converted</div>
+            </div>
+            {% if total_users %}
+            <div class="stat-card">
+                <div class="stat-number">{{ total_users|default:0 }}</div>
+                <div class="stat-label">Happy Users</div>
+            </div>
+            {% endif %}
+            <div class="stat-card">
+                <div class="stat-number">12+</div>
+                <div class="stat-label">Tools Available</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Free to Use</div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <h2 class="section-title">Why Choose SmartToolPDF?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-bolt"></i>
+                <h3>Fast & Efficient</h3>
+                <p>Lightning-fast processing with no waiting time</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-lock"></i>
+                <h3>Secure & Private</h3>
+                <p>Your files are encrypted and deleted after 24 hours</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-mobile-alt"></i>
+                <h3>Works Everywhere</h3>
+                <p>Use on any device - desktop, tablet, or mobile</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-dollar-sign"></i>
+                <h3>Free to Use</h3>
+                <p>No hidden fees, no subscriptions required</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Ready to Get Started?</h2>
+        <p>Join thousands of users who trust SmartToolPDF for their file conversion needs</p>
+        {% if user.is_authenticated %}
+        <a href="{% url 'tools:tool_list' %}" class="btn btn-primary btn-lg">Browse Tools</a>
+        {% else %}
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">Sign Up Free</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

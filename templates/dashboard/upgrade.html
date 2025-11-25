@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upgrade to Premium - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="upgrade-page" style="background: linear-gradient(135deg, #14B8A6 0%, #0F766E 100%); padding: 4rem 0;">
+    <div class="container">
+        <div class="upgrade-header" style="text-align: center; color: white; margin-bottom: 3rem;">
+            <h1 style="font-size: 3rem; margin-bottom: 1rem; color: white;">Upgrade to Premium</h1>
+            <p style="font-size: 1.25rem; opacity: 0.9;">Unlock unlimited conversions and premium features</p>
+        </div>
+
+        <div class="pricing-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto;">
+            <!-- Free Plan -->
+            <div class="pricing-card" style="background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <div class="plan-header" style="text-align: center; margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.5rem; color: #374151; margin-bottom: 0.5rem;">Free</h3>
+                    <div class="price" style="font-size: 3rem; font-weight: 700; color: #14B8A6; margin-bottom: 0.5rem;">
+                        $0<span style="font-size: 1.25rem; font-weight: 400; color: #6B7280;">/month</span>
+                    </div>
+                    <p style="color: #6B7280; font-size: 0.875rem;">Perfect for occasional use</p>
+                </div>
+
+                <ul class="features-list" style="list-style: none; padding: 0; margin-bottom: 2rem;">
+                    <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #E5E7EB;">
+                        <i class="fas fa-check-circle" style="color: #10B981; font-size: 1.25rem;"></i>
+                        <span style="color: #374151;">100 conversions per day</span>
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #E5E7EB;">
+                        <i class="fas fa-check-circle" style="color: #10B981; font-size: 1.25rem;"></i>
+                        <span style="color: #374151;">Files up to 10MB</span>
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #E5E7EB;">
+                        <i class="fas fa-check-circle" style="color: #10B981; font-size: 1.25rem;"></i>
+                        <span style="color: #374151;">Basic tools</span>
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #E5E7EB;">
+                        <i class="fas fa-check-circle" style="color: #10B981; font-size: 1.25rem;"></i>
+                        <span style="color: #374151;">24-hour file storage</span>
+                    </li>
+                </ul>
+
+                {% if not user.is_premium %}
+                <button disabled style="width: 100%; padding: 1rem; background: #E5E7EB; color: #9CA3AF; border: none; border-radius: 8px; font-weight: 600; cursor: not-allowed;">
+                    Current Plan
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- Premium Plan -->
+            <div class="pricing-card premium" style="background: linear-gradient(135deg, #FFD700, #FFA500); border-radius: 16px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; transform: scale(1.05);">
+                <div class="popular-badge" style="position: absolute; top: -12px; right: 20px; background: white; color: #FFA500; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 700; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    MOST POPULAR
+                </div>
+                
+                <div class="plan-header" style="text-align: center; margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.5rem; color: white; margin-bottom: 0.5rem;">Premium</h3>
+                    <div class="price" style="font-size: 3rem; font-weight: 700; color: white; margin-bottom: 0.5rem;">
+                        $9.99<span style="font-size: 1.25rem; font-weight: 400;">/month</span>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 0.875rem;">For power users</p>
+                </div>
+
+                <ul class="features-list" style="list-style: none; padding: 0; margin-bottom: 2rem;">
+                    <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.3);">
+                        <i class="fas fa-crown" style="color: white; font-size: 1.25rem;"></i>
+                        <span style="color: white; font-weight: 500;">Unlimited conversions</span>
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.3);">
+                        <i class="fas fa-crown" style="color: white; font-size: 1.25rem;"></i>
+                        <span style="color: white; font-weight: 500;">Files up to 500MB</span>
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.3);">
+                        <i class="fas fa-crown" style="color: white; font-size: 1.25rem;"></i>
+                        <span style="color: white; font-weight: 500;">All premium tools</span>
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.3);">
+                        <i class="fas fa-crown" style="color: white; font-size: 1.25rem;"></i>
+                        <span style="color: white; font-weight: 500;">Priority processing</span>
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.3);">
+                        <i class="fas fa-crown" style="color: white; font-size: 1.25rem;"></i>
+                        <span style="color: white; font-weight: 500;">No ads</span>
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0;">
+                        <i class="fas fa-crown" style="color: white; font-size: 1.25rem;"></i>
+                        <span style="color: white; font-weight: 500;">Priority support</span>
+                    </li>
+                </ul>
+
+                {% if user.is_premium %}
+                <button disabled style="width: 100%; padding: 1rem; background: white; color: #FFA500; border: none; border-radius: 8px; font-weight: 700; cursor: not-allowed; font-size: 1rem;">
+                    <i class="fas fa-check-circle"></i> Active Plan
+                </button>
+                {% else %}
+                <button onclick="alert('Payment integration coming soon! Contact support@smarttoolpdf.com to upgrade.');" style="width: 100%; padding: 1rem; background: white; color: #FFA500; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 1rem; transition: all 0.3s ease;">
+                    <i class="fas fa-crown"></i> Upgrade Now
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Features Comparison -->
+        <div class="features-comparison" style="background: white; border-radius: 16px; padding: 3rem; margin-top: 4rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <h2 style="text-align: center; margin-bottom: 2rem; color: #111827;">Feature Comparison</h2>
+            
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #E5E7EB;">
+                        <th style="padding: 1rem; text-align: left; color: #6B7280; font-weight: 600;">Feature</th>
+                        <th style="padding: 1rem; text-align: center; color: #6B7280; font-weight: 600;">Free</th>
+                        <th style="padding: 1rem; text-align: center; color: #FFA500; font-weight: 700;">Premium</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #E5E7EB;">
+                        <td style="padding: 1rem; color: #374151;">Daily Conversions</td>
+                        <td style="padding: 1rem; text-align: center; color: #6B7280;">100</td>
+                        <td style="padding: 1rem; text-align: center; color: #10B981; font-weight: 600;">Unlimited</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #E5E7EB;">
+                        <td style="padding: 1rem; color: #374151;">Max File Size</td>
+                        <td style="padding: 1rem; text-align: center; color: #6B7280;">10MB</td>
+                        <td style="padding: 1rem; text-align: center; color: #10B981; font-weight: 600;">500MB</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #E5E7EB;">
+                        <td style="padding: 1rem; color: #374151;">Premium Tools</td>
+                        <td style="padding: 1rem; text-align: center;"><i class="fas fa-times" style="color: #EF4444;"></i></td>
+                        <td style="padding: 1rem; text-align: center;"><i class="fas fa-check" style="color: #10B981; font-size: 1.25rem;"></i></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #E5E7EB;">
+                        <td style="padding: 1rem; color: #374151;">Priority Processing</td>
+                        <td style="padding: 1rem; text-align: center;"><i class="fas fa-times" style="color: #EF4444;"></i></td>
+                        <td style="padding: 1rem; text-align: center;"><i class="fas fa-check" style="color: #10B981; font-size: 1.25rem;"></i></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #E5E7EB;">
+                        <td style="padding: 1rem; color: #374151;">Ad-Free Experience</td>
+                        <td style="padding: 1rem; text-align: center;"><i class="fas fa-times" style="color: #EF4444;"></i></td>
+                        <td style="padding: 1rem; text-align: center;"><i class="fas fa-check" style="color: #10B981; font-size: 1.25rem;"></i></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 1rem; color: #374151;">Priority Support</td>
+                        <td style="padding: 1rem; text-align: center;"><i class="fas fa-times" style="color: #EF4444;"></i></td>
+                        <td style="padding: 1rem; text-align: center;"><i class="fas fa-check" style="color: #10B981; font-size: 1.25rem;"></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="upgrade-faq" style="margin-top: 4rem; text-align: center;">
+            <h2 style="color: white; margin-bottom: 1rem;">Have Questions?</h2>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: 2rem;">Check out our <a href="{% url 'dashboard:faq' %}" style="color: white; text-decoration: underline;">FAQ page</a> or <a href="{% url 'dashboard:contact' %}" style="color: white; text-decoration: underline;">contact us</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+.pricing-card button:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+@media (max-width: 768px) {
+    .upgrade-header h1 {
+        font-size: 2rem !important;
+    }
+    
+    .pricing-cards {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .pricing-card.premium {
+        transform: scale(1) !important;
+    }
+    
+    .features-comparison {
+        overflow-x: auto;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,48 @@
+# Django and core dependencies
+Django>=5.0
+python-decouple
+python-dotenv
+psycopg2-binary
+
+# Django REST Framework and API
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+drf-spectacular  # API documentation (OpenAPI/Swagger)
+
+# Celery and task queue
+celery
+redis
+
+# File conversion libraries
+pdf2docx
+docx2pdf
+PyPDF2
+Pillow
+moviepy
+python-pptx
+openpyxl
+pdfplumber
+reportlab
+
+# HTTP and webhook utilities
+requests
+
+# Additional utilities
+#python-magic-bin  # For Windows MIME type detection
+python-magic
+django-redis
+
+#sudo apt-get install libreoffice
+unoconv
+
+# Testing libraries
+hypothesis
+
+#sudo apt update
+#sudo apt install -y libmagic1
+#pip install -r requirements.txt
+#sudo apt install -y libreoffice
+#sudo apt install -y libreoffice libmagic1 unoconv 
+
+#pip install gunicorn

@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Billing & Subscription - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem 0;">
+    <div class="page-header" style="margin-bottom: 2rem;">
+        <h1>Billing & Subscription</h1>
+        <p style="color: #6B7280;">Manage your subscription and view usage details</p>
+    </div>
+
+    <!-- Current Plan -->
+    <div class="billing-card" style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
+        <h2 style="margin-bottom: 1.5rem; color: #111827; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-crown" style="color: {% if user.is_premium %}#FFA500{% else %}#9CA3AF{% endif %};"></i>
+            Current Plan
+        </h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+            <div class="plan-info">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="width: 64px; height: 64px; background: {% if user.is_premium %}linear-gradient(135deg, #FFD700, #FFA500){% else %}#F3F4F6{% endif %}; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-{% if user.is_premium %}crown{% else %}user{% endif %}" style="font-size: 2rem; color: {% if user.is_premium %}white{% else %}#6B7280{% endif %};"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.5rem; color: #111827;">
+                            {% if user.is_premium %}Premium{% else %}Free{% endif %}
+                        </h3>
+                        <p style="margin: 0; color: #6B7280; font-size: 0.875rem;">
+                            {% if user.is_premium %}$9.99/month{% else %}$0/month{% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                {% if not user.is_premium %}
+                <a href="{% url 'dashboard:upgrade' %}" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #FFD700, #FFA500); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;">
+                    <i class="fas fa-arrow-up"></i> Upgrade to Premium
+                </a>
+                {% else %}
+                <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #D1FAE5; color: #065F46; border-radius: 8px; font-weight: 600;">
+                    <i class="fas fa-check-circle"></i> Active Subscription
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="plan-features">
+                <h4 style="margin-bottom: 1rem; color: #374151; font-size: 1rem;">Your Benefits:</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    {% if user.is_premium %}
+                    <li style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; color: #374151;">
+                        <i class="fas fa-check" style="color: #10B981;"></i> Unlimited conversions
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; color: #374151;">
+                        <i class="fas fa-check" style="color: #10B981;"></i> Files up to 500MB
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; color: #374151;">
+                        <i class="fas fa-check" style="color: #10B981;"></i> All premium tools
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; color: #374151;">
+                        <i class="fas fa-check" style="color: #10B981;"></i> Priority support
+                    </li>
+                    {% else %}
+                    <li style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; color: #374151;">
+                        <i class="fas fa-check" style="color: #10B981;"></i> 100 conversions per day
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; color: #374151;">
+                        <i class="fas fa-check" style="color: #10B981;"></i> Files up to 10MB
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; color: #374151;">
+                        <i class="fas fa-check" style="color: #10B981;"></i> Basic tools
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Usage Statistics -->
+    <div class="billing-card" style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
+        <h2 style="margin-bottom: 1.5rem; color: #111827; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-chart-bar" style="color: #14B8A6;"></i>
+            Usage Statistics
+        </h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+            <div class="stat-box" style="padding: 1.5rem; background: #F9FAFB; border-radius: 8px; border-left: 4px solid #14B8A6;">
+                <div style="font-size: 2rem; font-weight: 700; color: #14B8A6; margin-bottom: 0.5rem;">
+                    {{ conversions_this_month }}
+                </div>
+                <div style="color: #6B7280; font-size: 0.875rem;">Conversions This Month</div>
+            </div>
+            
+            <div class="stat-box" style="padding: 1.5rem; background: #F9FAFB; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                <div style="font-size: 2rem; font-weight: 700; color: #3B82F6; margin-bottom: 0.5rem;">
+                    {{ total_conversions }}
+                </div>
+                <div style="color: #6B7280; font-size: 0.875rem;">Total Conversions</div>
+            </div>
+            
+            <div class="stat-box" style="padding: 1.5rem; background: #F9FAFB; border-radius: 8px; border-left: 4px solid #10B981;">
+                <div style="font-size: 2rem; font-weight: 700; color: #10B981; margin-bottom: 0.5rem;">
+                    {{ completed_conversions }}
+                </div>
+                <div style="color: #6B7280; font-size: 0.875rem;">Successful Conversions</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Method (Placeholder) -->
+    <div class="billing-card" style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 2rem; margin-bottom: 2rem;">
+        <h2 style="margin-bottom: 1.5rem; color: #111827; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-credit-card" style="color: #14B8A6;"></i>
+            Payment Method
+        </h2>
+        
+        {% if user.is_premium %}
+        <div style="padding: 2rem; background: #F9FAFB; border-radius: 8px; text-align: center;">
+            <i class="fas fa-credit-card" style="font-size: 3rem; color: #D1D5DB; margin-bottom: 1rem;"></i>
+            <h3 style="color: #374151; margin-bottom: 0.5rem;">Payment Integration Coming Soon</h3>
+            <p style="color: #6B7280; margin-bottom: 1.5rem;">We're working on integrating secure payment processing. For now, your premium subscription is active.</p>
+            <p style="color: #6B7280; font-size: 0.875rem;">Contact <a href="mailto:billing@smarttoolpdf.com" style="color: #14B8A6;">billing@smarttoolpdf.com</a> for billing inquiries.</p>
+        </div>
+        {% else %}
+        <div style="padding: 2rem; background: #F9FAFB; border-radius: 8px; text-align: center;">
+            <i class="fas fa-info-circle" style="font-size: 3rem; color: #D1D5DB; margin-bottom: 1rem;"></i>
+            <h3 style="color: #374151; margin-bottom: 0.5rem;">No Payment Method Required</h3>
+            <p style="color: #6B7280; margin-bottom: 1.5rem;">You're currently on the free plan. Upgrade to premium to unlock unlimited conversions!</p>
+            <a href="{% url 'dashboard:upgrade' %}" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #14B8A6; color: white; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                <i class="fas fa-crown"></i> View Premium Plans
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Billing History (Placeholder) -->
+    <div class="billing-card" style="background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 2rem;">
+        <h2 style="margin-bottom: 1.5rem; color: #111827; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-receipt" style="color: #14B8A6;"></i>
+            Billing History
+        </h2>
+        
+        <div style="padding: 3rem; background: #F9FAFB; border-radius: 8px; text-align: center;">
+            <i class="fas fa-file-invoice" style="font-size: 3rem; color: #D1D5DB; margin-bottom: 1rem;"></i>
+            <h3 style="color: #374151; margin-bottom: 0.5rem;">No Billing History</h3>
+            <p style="color: #6B7280;">
+                {% if user.is_premium %}
+                Your billing history will appear here once payment processing is integrated.
+                {% else %}
+                Upgrade to premium to start your subscription and view billing history.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Account Actions -->
+    {% if user.is_premium %}
+    <div class="billing-card" style="background: #FEF2F2; border: 1px solid #FEE2E2; border-radius: 12px; padding: 2rem; margin-top: 2rem;">
+        <h3 style="color: #991B1B; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-exclamation-triangle"></i>
+            Cancel Subscription
+        </h3>
+        <p style="color: #7F1D1D; margin-bottom: 1rem;">
+            Need to cancel your subscription? Contact our support team and we'll help you with the process.
+        </p>
+        <a href="{% url 'dashboard:contact' %}" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: white; color: #DC2626; border: 2px solid #DC2626; border-radius: 8px; text-decoration: none; font-weight: 600;">
+            <i class="fas fa-envelope"></i> Contact Support
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    .billing-card {
+        padding: 1.5rem !important;
+    }
+}
+</style>
+{% endblock %}

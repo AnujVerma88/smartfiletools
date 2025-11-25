@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Access Approved</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f9fafb;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #14B8A6 0%, #0F766E 100%); padding: 40px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🎉 API Access Approved!</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 24px;">Congratulations, {{ full_name }}!</h2>
+                            
+                            <p style="color: #4b5563; line-height: 1.6; margin: 0 0 20px 0;">
+                                Great news! Your API access request for <strong>{{ company_name }}</strong> has been approved.
+                            </p>
+                            
+                            <!-- API Credentials Box -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef3c7; border: 2px solid #fbbf24; border-radius: 8px; margin: 30px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <h3 style="color: #92400e; margin: 0 0 15px 0; font-size: 18px;">⚠️ Your API Credentials</h3>
+                                        <p style="color: #92400e; margin: 0 0 15px 0; font-size: 14px; font-weight: 600;">
+                                            IMPORTANT: Save these credentials securely. We cannot retrieve your API secret after this email.
+                                        </p>
+                                        <p style="color: #1f2937; margin: 8px 0; font-size: 14px; font-family: monospace; background-color: #ffffff; padding: 10px; border-radius: 4px;">
+                                            <strong>API Key:</strong><br>{{ api_key }}
+                                        </p>
+                                        <p style="color: #1f2937; margin: 8px 0; font-size: 14px; font-family: monospace; background-color: #ffffff; padding: 10px; border-radius: 4px;">
+                                            <strong>API Secret:</strong><br>{{ api_secret }}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Plan Details -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border-radius: 8px; margin: 20px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <h3 style="color: #1f2937; margin: 0 0 15px 0; font-size: 18px;">Your Plan</h3>
+                                        <p style="color: #6b7280; margin: 8px 0; font-size: 14px;">
+                                            <strong>Plan:</strong> {{ merchant.get_plan_display }}
+                                        </p>
+                                        <p style="color: #6b7280; margin: 8px 0; font-size: 14px;">
+                                            <strong>Monthly Limit:</strong> {{ merchant.monthly_request_limit|default:"Unlimited" }} requests
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <h3 style="color: #1f2937; margin: 30px 0 15px 0; font-size: 18px;">Getting Started</h3>
+                            <ol style="color: #4b5563; line-height: 1.8; padding-left: 20px;">
+                                <li>Visit our <a href="https://smarttoolpdf.com/api/docs/" style="color: #14B8A6;">API documentation</a></li>
+                                <li>Review the authentication guide</li>
+                                <li>Start integrating our API into your application</li>
+                            </ol>
+                            
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="https://smarttoolpdf.com/merchant/dashboard/" style="display: inline-block; background-color: #14B8A6; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600;">
+                                            Go to Merchant Dashboard
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="color: #4b5563; line-height: 1.6; margin: 20px 0 0 0;">
+                                If you have any questions or need assistance, please contact our support team.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                            <p style="color: #6b7280; margin: 0 0 10px 0; font-size: 14px;">
+                                Welcome to SmartToolPDF API!<br>
+                                <strong>The SmartToolPDF Team</strong>
+                            </p>
+                            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+                                <a href="https://smarttoolpdf.com" style="color: #14B8A6; text-decoration: none;">smarttoolpdf.com</a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

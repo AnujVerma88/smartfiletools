@@ -1,0 +1,119 @@
+Project Name (example): SmartFileTools
+
+Goal:
+A web-based platform where users can register, log in, and use various online file tools (convert, compress, edit, merge, etc.) for documents, images, and videos.
+
+Key Features:
+
+User authentication (login/signup)
+
+File conversion and editing tools
+
+Ad management (admin-controlled)
+
+History and download management
+
+Credits or usage limit system (optional for premium model)
+
+Modern responsive UI
+
+🧱 2. Core Modules & Functional Requirements
+A. User Management
+Feature	Description
+User Registration	Register with email/password, Google sign-in (optional).
+User Login	Secure login with JWT/Session-based auth.
+Profile Management	View/edit profile, upload profile image.
+Usage History	Track recent file conversions and downloads.
+Subscription / Credits	Free vs Premium usage (optional for monetization).
+Forgot Password	Password reset via email link.
+
+Models:
+
+User (extend Django’s AbstractUser)
+
+UserProfile (extra fields like avatar, plan type, usage count)
+
+ConversionHistory (stores conversion logs per user)
+
+B. File Conversion Tools
+
+Each conversion will have an API endpoint and a view.
+You can use libraries like:
+
+pdf2docx, docx2pdf
+
+PyMuPDF / pdfplumber (for PDF processing)
+
+Pillow (for image processing)
+
+moviepy / ffmpeg-python (for video compression/conversion)
+
+python-pptx, openpyxl (for PowerPoint and Excel)
+
+Supported Conversions
+Type	Input	Output	Tools/Libraries
+PDF to DOCX	.pdf	.docx	pdf2docx
+DOCX to PDF	.docx	.pdf	docx2pdf / ReportLab
+XLS/XLSX to PDF	.xls/.xlsx	.pdf	openpyxl + ReportLab
+PPT/PPTX to PDF	.ppt/.pptx	.pdf	python-pptx
+JPG/PNG to PDF	.jpg/.png	.pdf	Pillow
+Merge PDFs	multiple .pdf	single .pdf	PyPDF2
+Split PDF	.pdf	multiple PDFs	PyPDF2
+Compress PDF	.pdf	smaller .pdf	PyPDF2 / Ghostscript
+Compress Image	.jpg/.png	smaller .jpg/.png	Pillow
+Convert Image	.png → .jpg, etc.	.jpg/.png	Pillow
+Compress Video	.mp4/.mov	smaller .mp4	moviepy / ffmpeg-python
+Extract Text from PDF	.pdf	.txt	pdfplumber / PyMuPDF
+
+Each tool will be a microservice-like module with its own endpoint.
+
+Example:
+
+/api/convert/pdf-to-docx/
+/api/convert/docx-to-pdf/
+/api/compress/video/
+/api/edit/image/
+
+C. Ads Management (Admin Feature)
+Feature	Description
+Admin Ad Control	Admin can upload/manage ad banners or text.
+Ad Placement	Ads displayed dynamically in certain sections (home, tool pages).
+Ad Analytics	Track clicks or impressions (optional).
+
+Models:
+
+Advertisement: title, image, link_url, position, is_active, impression_count
+
+Admin can use Django Admin or a custom dashboard.
+
+D. File Upload and Management
+Feature	Description
+File Upload	Upload files via drag & drop or file picker.
+Temporary Storage	Store uploaded files in a temporary directory (/media/temp/).
+File Cleanup	Auto-delete old files via cron or Celery task.
+Download Result	Provide processed file link for download.
+E. Dashboard (Frontend)
+Page	Description
+Home Page	Tool cards with category (Convert, Compress, Edit).
+Tool Page	Upload, conversion progress, download output.
+Login / Signup	User authentication forms.
+User Dashboard	History, account info, recent tools used.
+Admin Dashboard	Ad management, analytics, file cleanup logs.
+
+Frontend options:
+
+Django + HTMX/Alpine.js (lightweight)
+
+Or React frontend + Django REST Framework backend (modern stack)
+
+⚙️ 3. Technical Architecture
+Layer	Technology
+Backend	Django + Django REST Framework
+Frontend	Django templates / React (optional)
+Database	PostgreSQL / MySQL
+File Storage	Local /media/ or AWS S3 / DigitalOcean Spaces
+Task Queue	Celery + Redis (for heavy file conversions)
+Authentication	Django auth / JWT (via DRF SimpleJWT)
+Logging	Python logging + Sentry (for error tracking)
+Security	File size limits, MIME validation, antivirus scan optional
+Deployment	Nginx + Gunicorn / Docker-based setup

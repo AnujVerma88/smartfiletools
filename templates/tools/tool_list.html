@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}All Tools - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="tools-page">
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="tools-hero">
+            <h1>All Tools</h1>
+            <p class="lead">Powerful online tools for all your file conversion needs</p>
+            
+            <!-- Search Bar -->
+            <form method="get" class="tools-search">
+                <input type="text" name="q" placeholder="Search for a tool..." value="{{ search_query }}" />
+                <button type="submit"><i class="fas fa-search"></i> Search</button>
+            </form>
+        </section>
+
+        {% if search_query %}
+        <div class="search-results-info">
+            <p>Showing results for: <strong>{{ search_query }}</strong></p>
+            <a href="{% url 'tools:tool_list' %}" class="btn btn-secondary btn-sm">Clear Search</a>
+        </div>
+        {% endif %}
+
+        <!-- Tools by Category -->
+        {% if tools_by_category %}
+            {% for category_name, category_tools in tools_by_category.items %}
+            <section class="tools-category-section">
+                <h2 class="category-title">
+                    <i class="fas fa-folder"></i> {{ category_name }}
+                </h2>
+                
+                <div class="tools-grid">
+                    {% for tool in category_tools %}
+                    <div class="tool-card">
+                        <a href="{% url 'tools:tool_detail' slug=tool.slug %}">
+                            <div class="tool-icon">
+                                <i class="{{ tool.icon|default:'fas fa-file' }}"></i>
+                            </div>
+                            <h3>{{ tool.name }}</h3>
+                            <p>{{ tool.description }}</p>
+                            
+                            <div class="tool-meta">
+                                <span class="usage-count">
+                                    <i class="fas fa-users"></i> {{ tool.usage_count|default:0 }}
+                                </span>
+                                {% if tool.is_premium %}
+                                <span class="premium-badge">Premium</span>
+                                {% endif %}
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h3>No tools found</h3>
+                <p>Try adjusting your search or browse all categories</p>
+            </div>
+        {% endif %}
+
+        <!-- Categories Overview -->
+        <section class="categories-overview">
+            <h2>Browse by Category</h2>
+            <div class="categories-grid">
+                {% for category in categories %}
+                <a href="{% url 'tools:category_detail' slug=category.slug %}" class="category-card">
+                    <div class="category-icon">
+                        <i class="{{ category.icon|default:'fas fa-folder' }}"></i>
+                    </div>
+                    <h3>{{ category.name }}</h3>
+                    <p>{{ category.description }}</p>
+                    <span class="tool-count">{{ category.tools.count }} tools</span>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1>Welcome back, {{ user.username }}!</h1>
+            <p class="dashboard-subtitle">Here's your conversion activity overview</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-cards-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ total_conversions }}</div>
+                    <div class="stat-label">Total Conversions</div>
+                </div>
+            </div>
+
+            <div class="stat-card success">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ completed_conversions }}</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ processing_conversions }}</div>
+                    <div class="stat-label">Processing</div>
+                </div>
+            </div>
+
+            <div class="stat-card {% if failed_conversions > 0 %}danger{% endif %}">
+                <div class="stat-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ failed_conversions }}</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage and Account Info -->
+        <div class="dashboard-grid">
+            <!-- Usage Card -->
+            <div class="dashboard-card">
+                <h2>Daily Usage</h2>
+                <div class="usage-info">
+                    <div class="usage-stats">
+                        <div class="usage-number">{{ daily_usage }} / {{ daily_limit }}</div>
+                        <div class="usage-label">Conversions Today</div>
+                    </div>
+                    {% if not is_premium %}
+                    <div class="usage-bar">
+                        <div class="usage-progress" style="width: {% widthratio daily_usage 10 100 %}%"></div>
+                    </div>
+                    <p class="usage-remaining">{{ remaining_conversions }} conversions remaining today</p>
+                    {% else %}
+                    <p class="usage-unlimited">
+                        <i class="fas fa-infinity"></i> Unlimited conversions
+                    </p>
+                    {% endif %}
+                </div>
+                {% if not is_premium %}
+                <a href="#upgrade" class="btn btn-primary btn-block">Upgrade to Premium</a>
+                {% endif %}
+            </div>
+
+            <!-- Account Info Card -->
+            <div class="dashboard-card">
+                <h2>Account Information</h2>
+                <div class="account-info">
+                    <div class="info-row">
+                        <span class="info-label">Account Type:</span>
+                        <span class="info-value">
+                            {% if is_premium %}
+                                <span class="badge badge-premium">Premium</span>
+                            {% else %}
+                                <span class="badge badge-free">Free</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Success Rate:</span>
+                        <span class="info-value">{{ success_rate }}%</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Member Since:</span>
+                        <span class="info-value">{{ user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+                <a href="{% url 'accounts:profile' %}" class="btn btn-outline btn-block">View Profile</a>
+            </div>
+        </div>
+
+        <!-- Most Used Tools -->
+        {% if tool_usage %}
+        <div class="dashboard-card">
+            <h2>Most Used Tools</h2>
+            <div class="tools-usage-list">
+                {% for item in tool_usage %}
+                <div class="tool-usage-item">
+                    <div class="tool-name">{{ item.display_name }}</div>
+                    <div class="tool-count">{{ item.count }} uses</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Conversions -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2>Recent Conversions</h2>
+                <a href="{% url 'tools:conversion_history' %}" class="view-all-link">View All</a>
+            </div>
+            
+            {% if recent_conversions %}
+            <div class="conversions-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tool</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for conversion in recent_conversions %}
+                        <tr>
+                            <td>{{ conversion.get_tool_type_display }}</td>
+                            <td>
+                                <span class="status-badge status-{{ conversion.status }}">
+                                    {{ conversion.status|title }}
+                                </span>
+                            </td>
+                            <td>{{ conversion.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if conversion.status == 'completed' %}
+                                <a href="{% url 'tools:file_download' conversion_id=conversion.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                                {% elif conversion.status == 'processing' or conversion.status == 'pending' %}
+                                <a href="{% url 'tools:conversion_status' conversion_id=conversion.id %}" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-eye"></i> View Status
+                                </a>
+                                {% else %}
+                                <a href="{% url 'tools:conversion_detail' conversion_id=conversion.id %}" class="btn btn-sm btn-outline">
+                                    <i class="fas fa-info-circle"></i> Details
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No conversions yet</p>
+                <a href="{% url 'tools:tool_list' %}" class="btn btn-primary">Start Converting</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="dashboard-card">
+            <h2>Quick Actions</h2>
+            <div class="quick-actions-grid">
+                <a href="{% url 'tools:tool_list' %}" class="quick-action-card">
+                    <i class="fas fa-tools"></i>
+                    <span>Browse Tools</span>
+                </a>
+                <a href="{% url 'tools:conversion_history' %}" class="quick-action-card">
+                    <i class="fas fa-history"></i>
+                    <span>View History</span>
+                </a>
+                <a href="{% url 'accounts:profile' %}" class="quick-action-card">
+                    <i class="fas fa-user"></i>
+                    <span>Edit Profile</span>
+                </a>
+                {% if not is_premium %}
+                <a href="#upgrade" class="quick-action-card premium">
+                    <i class="fas fa-crown"></i>
+                    <span>Upgrade</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Security - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="security-page">
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="security-hero">
+            <i class="fas fa-shield-alt"></i>
+            <h1>Your Security is Our Priority</h1>
+            <p class="lead">Learn how we protect your files and data</p>
+        </section>
+
+        <!-- Security Overview -->
+        <section class="security-section">
+            <h2>Our Commitment to Security</h2>
+            <p class="intro-text">
+                At SmartToolPDF, we understand that you're trusting us with your important documents. We take this responsibility seriously and have implemented multiple layers of security to protect your files and personal information.
+            </p>
+        </section>
+
+        <!-- Security Features -->
+        <section class="security-features">
+            <h2>Security Features</h2>
+            
+            <div class="security-grid">
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>SSL/TLS Encryption</h3>
+                    <p>All data transmitted between your browser and our servers is encrypted using industry-standard SSL/TLS protocols. This ensures that your files and personal information cannot be intercepted during transfer.</p>
+                </div>
+
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <h3>Secure Servers</h3>
+                    <p>Our servers are hosted in secure data centers with 24/7 monitoring, physical security controls, and redundant systems to ensure your data is always protected and available.</p>
+                </div>
+
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>Automatic File Deletion</h3>
+                    <p>All uploaded and converted files are automatically deleted from our servers after 24 hours. We do not permanently store your files, ensuring your documents remain private.</p>
+                </div>
+
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3>Privacy Protection</h3>
+                    <p>We never share, sell, or distribute your files to third parties. Your files are processed solely for the conversion you requested and are only accessible to you.</p>
+                </div>
+
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>Data Encryption at Rest</h3>
+                    <p>Files stored on our servers are encrypted at rest using AES-256 encryption, providing an additional layer of protection against unauthorized access.</p>
+                </div>
+
+                <div class="security-card">
+                    <div class="security-icon">
+                        <i class="fas fa-shield-virus"></i>
+                    </div>
+                    <h3>Malware Scanning</h3>
+                    <p>All uploaded files are scanned for viruses and malware before processing to protect both you and our infrastructure from malicious content.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Protection -->
+        <section class="security-section">
+            <h2>Data Protection Practices</h2>
+            
+            <div class="protection-list">
+                <div class="protection-item">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <h3>No Permanent Storage</h3>
+                        <p>We do not keep copies of your files. Once converted and downloaded, files are queued for automatic deletion within 24 hours.</p>
+                    </div>
+                </div>
+
+                <div class="protection-item">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <h3>Secure Authentication</h3>
+                        <p>User passwords are hashed using industry-standard algorithms (PBKDF2 with SHA256). We never store passwords in plain text.</p>
+                    </div>
+                </div>
+
+                <div class="protection-item">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <h3>Access Controls</h3>
+                        <p>Only you can access your converted files. We implement strict access controls to ensure files are only accessible to the account that uploaded them.</p>
+                    </div>
+                </div>
+
+                <div class="protection-item">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <h3>Regular Security Audits</h3>
+                        <p>We conduct regular security audits and penetration testing to identify and address potential vulnerabilities.</p>
+                    </div>
+                </div>
+
+                <div class="protection-item">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <h3>GDPR Compliant</h3>
+                        <p>We comply with GDPR and other data protection regulations, giving you control over your personal data.</p>
+                    </div>
+                </div>
+
+                <div class="protection-item">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <h3>Secure Payment Processing</h3>
+                        <p>All payment information is processed through PCI-DSS compliant payment processors. We never store your credit card information.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Best Practices -->
+        <section class="security-section bg-light">
+            <h2>Security Best Practices for Users</h2>
+            <p>Help us keep your account secure by following these recommendations:</p>
+            
+            <div class="best-practices-grid">
+                <div class="practice-card">
+                    <i class="fas fa-key"></i>
+                    <h3>Use Strong Passwords</h3>
+                    <p>Create passwords with at least 8 characters, including uppercase, lowercase, numbers, and special characters.</p>
+                </div>
+
+                <div class="practice-card">
+                    <i class="fas fa-user-lock"></i>
+                    <h3>Enable Two-Factor Authentication</h3>
+                    <p>Add an extra layer of security to your account by enabling 2FA in your account settings (coming soon).</p>
+                </div>
+
+                <div class="practice-card">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <h3>Log Out on Shared Devices</h3>
+                    <p>Always log out when using SmartToolPDF on public or shared computers.</p>
+                </div>
+
+                <div class="practice-card">
+                    <i class="fas fa-sync-alt"></i>
+                    <h3>Keep Software Updated</h3>
+                    <p>Ensure your browser and operating system are up to date with the latest security patches.</p>
+                </div>
+
+                <div class="practice-card">
+                    <i class="fas fa-eye-slash"></i>
+                    <h3>Be Cautious with Sensitive Files</h3>
+                    <p>While we take security seriously, avoid uploading highly sensitive or confidential documents unless necessary.</p>
+                </div>
+
+                <div class="practice-card">
+                    <i class="fas fa-download"></i>
+                    <h3>Download and Delete</h3>
+                    <p>Download your converted files promptly and delete them from your conversion history if they contain sensitive information.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Compliance -->
+        <section class="security-section">
+            <h2>Compliance & Certifications</h2>
+            
+            <div class="compliance-grid">
+                <div class="compliance-card">
+                    <h3>GDPR</h3>
+                    <p>General Data Protection Regulation compliant</p>
+                </div>
+
+                <div class="compliance-card">
+                    <h3>CCPA</h3>
+                    <p>California Consumer Privacy Act compliant</p>
+                </div>
+
+                <div class="compliance-card">
+                    <h3>SOC 2</h3>
+                    <p>Type II certification (in progress)</p>
+                </div>
+
+                <div class="compliance-card">
+                    <h3>ISO 27001</h3>
+                    <p>Information security management (in progress)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Report Security Issue -->
+        <section class="security-report">
+            <div class="report-box">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <h2>Report a Security Issue</h2>
+                    <p>If you discover a security vulnerability, please report it to us immediately at <a href="mailto:security@smarttoolpdf.com">security@smarttoolpdf.com</a>. We take all security reports seriously and will respond promptly.</p>
+                    <p class="note">Please do not publicly disclose security issues until we've had a chance to address them.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="security-cta">
+            <h2>Questions About Security?</h2>
+            <p>Our team is happy to answer any security-related questions you may have.</p>
+            <a href="{% url 'dashboard:contact' %}" class="btn btn-primary">Contact Us</a>
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,740 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="merchant-dashboard">
+    <div class="container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div>
+                <h1>Merchant Dashboard</h1>
+                <p>Welcome back, {{ merchant.company_name }}!</p>
+            </div>
+            <div class="header-actions">
+                <a href="{% url 'api:merchant_api_keys' %}" class="btn btn-secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    Manage API Keys
+                </a>
+                <a href="/api/docs/" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    API Documentation
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <!-- Plan Card -->
+            <div class="stat-card plan-card">
+                <div class="stat-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <h3>Current Plan</h3>
+                    <p class="stat-value">{{ merchant.get_plan_display }}</p>
+                    <small>{{ merchant.monthly_request_limit|default:"Unlimited" }} requests/month</small>
+                </div>
+            </div>
+
+            <!-- Usage Card -->
+            <div class="stat-card usage-card">
+                <div class="stat-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <h3>API Usage</h3>
+                    <p class="stat-value">{{ merchant.current_month_usage|default:0 }}</p>
+                    <small>{{ remaining_requests }} remaining this month</small>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ usage_percentage }}%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Keys Card -->
+            <div class="stat-card keys-card">
+                <div class="stat-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <h3>API Keys</h3>
+                    <p class="stat-value">{{ active_keys }}/{{ total_keys }}</p>
+                    <small>Active keys</small>
+                </div>
+            </div>
+
+            <!-- Total Requests Card -->
+            <div class="stat-card total-card">
+                <div class="stat-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <h3>Total Requests</h3>
+                    <p class="stat-value">{{ merchant.total_requests|default:0 }}</p>
+                    <small>All-time</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Recent Activity -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>Recent API Activity</h2>
+                    <a href="{% url 'api:merchant_usage' %}" class="link">View All →</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_usage %}
+                        <div class="activity-list">
+                            {% for log in recent_usage %}
+                                <div class="activity-item">
+                                    <div class="activity-icon status-{{ log.status_code|slice:':1' }}">
+                                        {% if log.status_code < 300 %}
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        {% elif log.status_code < 400 %}
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                            </svg>
+                                        {% else %}
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                                            </svg>
+                                        {% endif %}
+                                    </div>
+                                    <div class="activity-details">
+                                        <div class="activity-title">
+                                            <span class="method-badge">{{ log.method }}</span>
+                                            <code>{{ log.endpoint }}</code>
+                                        </div>
+                                        <div class="activity-meta">
+                                            <span class="status-code status-{{ log.status_code }}">{{ log.status_code }}</span>
+                                            <span>{{ log.response_time|floatformat:3 }}s</span>
+                                            <span>{{ log.created_at|date:"M d, H:i" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state-small">
+                            <p>No API activity yet. Start making requests to see them here.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Usage by Status -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>Usage by Status</h2>
+                </div>
+                <div class="card-body">
+                    {% if usage_by_status %}
+                        <div class="status-list">
+                            {% for item in usage_by_status %}
+                                <div class="status-item">
+                                    <div class="status-label">
+                                        <span class="status-dot status-{{ item.status_code }}"></span>
+                                        <span>{{ item.status_code }}</span>
+                                    </div>
+                                    <div class="status-count">{{ item.count }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state-small">
+                            <p>No usage data available yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Information -->
+        <div class="account-info">
+            <div class="info-card">
+                <h2>Account Information</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">Company:</span>
+                        <span class="value">{{ merchant.company_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Contact Email:</span>
+                        <span class="value">{{ merchant.contact_email }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Account Status:</span>
+                        <span class="value">
+                            {% if merchant.is_active %}
+                                <span class="badge badge-success">Active</span>
+                            {% else %}
+                                <span class="badge badge-danger">Inactive</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Member Since:</span>
+                        <span class="value">{{ merchant.created_at|date:"F Y" }}</span>
+                    </div>
+                    {% if merchant.last_request_at %}
+                        <div class="info-item">
+                            <span class="label">Last API Request:</span>
+                            <span class="value">{{ merchant.last_request_at|date:"M d, Y H:i" }}</span>
+                        </div>
+                    {% endif %}
+                    {% if merchant.next_billing_date %}
+                        <div class="info-item">
+                            <span class="label">Next Billing Date:</span>
+                            <span class="value">{{ merchant.next_billing_date|date:"M d, Y" }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links">
+            <h2>Quick Links</h2>
+            <div class="links-grid">
+                <a href="{% url 'api:merchant_api_keys' %}" class="link-card">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>Manage API Keys</span>
+                </a>
+                <a href="{% url 'api:merchant_usage' %}" class="link-card">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                    <span>View Usage Statistics</span>
+                </a>
+                <a href="/api/docs/" class="link-card">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    <span>API Documentation</span>
+                </a>
+                <a href="/contact/" class="link-card">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Contact Support</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.merchant-dashboard {
+    background-color: #f9fafb;
+    min-height: 100vh;
+    padding: 40px 0;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.dashboard-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
+
+.dashboard-header p {
+    color: #6b7280;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--color-primary, #14B8A6);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0F766E;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: white;
+    color: #1f2937;
+    border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+    background-color: #f9fafb;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    gap: 16px;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.plan-card .stat-icon {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.usage-card .stat-icon {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.keys-card .stat-icon {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.total-card .stat-icon {
+    background-color: #e0e7ff;
+    color: #3730a3;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-content h3 {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6b7280;
+    margin: 0 0 8px 0;
+}
+
+.stat-value {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 4px 0;
+}
+
+.stat-content small {
+    font-size: 0.875rem;
+    color: #9ca3af;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background-color: #e5e7eb;
+    border-radius: 3px;
+    margin-top: 12px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--color-primary, #14B8A6);
+    border-radius: 3px;
+    transition: width 0.3s;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.content-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.card-header h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.link {
+    color: var(--color-primary, #14B8A6);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+.card-body {
+    padding: 24px;
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.activity-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.activity-icon.status-2 {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.activity-icon.status-3 {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.activity-icon.status-4 {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.activity-icon.status-5 {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.activity-details {
+    flex: 1;
+}
+
+.activity-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.method-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #f3f4f6;
+    color: #1f2937;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 4px;
+}
+
+.activity-title code {
+    font-size: 0.875rem;
+    color: #1f2937;
+}
+
+.activity-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.status-code {
+    font-weight: 600;
+}
+
+.status-code.status-200,
+.status-code.status-201,
+.status-code.status-202 {
+    color: #065f46;
+}
+
+.status-code.status-400,
+.status-code.status-401,
+.status-code.status-403,
+.status-code.status-404 {
+    color: #92400e;
+}
+
+.status-code.status-500,
+.status-code.status-502,
+.status-code.status-503 {
+    color: #991b1b;
+}
+
+.status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background-color: #f9fafb;
+    border-radius: 6px;
+}
+
+.status-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-dot.status-200,
+.status-dot.status-201,
+.status-dot.status-202 {
+    background-color: #10b981;
+}
+
+.status-dot.status-400,
+.status-dot.status-401,
+.status-dot.status-403,
+.status-dot.status-404,
+.status-dot.status-429 {
+    background-color: #f59e0b;
+}
+
+.status-dot.status-500,
+.status-dot.status-502,
+.status-dot.status-503 {
+    background-color: #ef4444;
+}
+
+.status-count {
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.empty-state-small {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6b7280;
+}
+
+.account-info {
+    margin-bottom: 32px;
+}
+
+.info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.info-card h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 20px 0;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background-color: #f9fafb;
+    border-radius: 6px;
+}
+
+.info-item .label {
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.info-item .value {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.badge-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.quick-links h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 16px;
+}
+
+.links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.link-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    color: #1f2937;
+    transition: all 0.2s;
+}
+
+.link-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.link-card svg {
+    color: var(--color-primary, #14B8A6);
+}
+
+.link-card span {
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

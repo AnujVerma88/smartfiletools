@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ tool.name }} - SmartToolPDF{% endblock %}
+
+{% block meta_description %}{{ tool.description }} Use our free online {{ tool.name }} tool for fast and secure file conversion.{% endblock %}
+
+{% block content %}
+<div class="tool-detail-page">
+    <div class="container">
+        <!-- Tool Header -->
+        <section class="tool-header">
+            <div class="tool-header-content">
+                <div class="tool-icon-large">
+                    <i class="{{ tool.icon|default:'fas fa-file' }}"></i>
+                </div>
+                <div class="tool-header-text">
+                    <h1>{{ tool.name }}</h1>
+                    <p class="lead">{{ tool.description }}</p>
+                    <div class="tool-meta">
+                        <span class="category-badge">
+                            <i class="{{ tool.category.icon|default:'fas fa-folder' }}"></i>
+                            {{ tool.category.name }}
+                        </span>
+                        {% if tool.is_premium %}
+                        <span class="premium-badge">
+                            <i class="fas fa-crown"></i> Premium
+                        </span>
+                        {% endif %}
+                        <span class="usage-badge">
+                            <i class="fas fa-users"></i> {{ tool.usage_count|default:0 }} uses
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- File Upload Section -->
+        <section class="file-upload-section">
+            {% if needs_premium %}
+            <div class="premium-notice">
+                <i class="fas fa-crown"></i>
+                <p>This tool requires a premium account. <a href="{% url 'pricing' %}">Upgrade now</a> to access all features.</p>
+            </div>
+            {% else %}
+            <div class="upload-container">
+                <h2>Upload Your File</h2>
+                {% include 'includes/file_upload.html' %}
+                
+                <div class="file-info">
+                    <div class="info-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Supported formats: {{ supported_formats_display }}</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-database"></i>
+                        <span>Max file size: {{ tool.max_file_size_mb }} MB</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-lock"></i>
+                        <span>Secure and private processing</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Instructional Section -->
+        {% include 'includes/instructional_section.html' %}
+
+        <!-- Features Section -->
+        <section class="features-section">
+            <h2>Why Choose {{ tool.name }}?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Fast Processing</h3>
+                    <p>Convert your files in seconds with our optimized servers</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Secure & Private</h3>
+                    <p>Your files are encrypted and automatically deleted after processing</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-check-double"></i>
+                    <h3>High Quality</h3>
+                    <p>Maintain the quality and formatting of your original files</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>Any Device</h3>
+                    <p>Works on desktop, tablet, and mobile devices</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Related Tools -->
+        {% if related_tools %}
+        <section class="related-tools">
+            <h2>Related Tools</h2>
+            <div class="tools-grid">
+                {% for related_tool in related_tools %}
+                <div class="tool-card">
+                    <a href="{% url 'tools:tool_detail' slug=related_tool.slug %}">
+                        <div class="tool-icon">
+                            <i class="{{ related_tool.icon|default:'fas fa-file' }}"></i>
+                        </div>
+                        <h3>{{ related_tool.name }}</h3>
+                        <p>{{ related_tool.description }}</p>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,283 @@
+{% comment %}
+Tool Cards Examples and Variations
+This file demonstrates all available tool card styles and configurations
+{% endcomment %}
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Cards Examples - SmartToolPDF</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container" style="padding: 2rem 0;">
+        
+        <!-- Standard Tool Cards Grid -->
+        <section style="margin-bottom: 3rem;">
+            <h2 class="section-title">Standard Tool Cards</h2>
+            <div class="tools-grid">
+                <!-- Standard Tool Card -->
+                <div class="tool-card">
+                    <a href="#">
+                        <div class="tool-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <h3>PDF to DOCX</h3>
+                        <p>Convert PDF documents to editable Word files with preserved formatting</p>
+                        <div class="tool-meta">
+                            <span class="usage-count">
+                                <i class="fas fa-users"></i>
+                                <span>1,234 uses</span>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Premium Tool Card -->
+                <div class="tool-card premium">
+                    <a href="#">
+                        <div class="tool-icon">
+                            <i class="fas fa-compress"></i>
+                        </div>
+                        <h3>Advanced PDF Compressor</h3>
+                        <p>Professional PDF compression with quality control and batch processing</p>
+                        <div class="tool-meta">
+                            <span class="usage-count">
+                                <i class="fas fa-users"></i>
+                                <span>856 uses</span>
+                            </span>
+                            <span class="premium-badge">Premium</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Featured Tool Card -->
+                <div class="tool-card featured">
+                    <a href="#">
+                        <div class="tool-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <h3>Image to PDF</h3>
+                        <p>Convert multiple images to a single PDF document instantly</p>
+                        <div class="tool-meta">
+                            <span class="usage-count">
+                                <i class="fas fa-users"></i>
+                                <span>2,456 uses</span>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Tool Card with Badges -->
+                <div class="tool-card">
+                    <a href="#">
+                        <div class="tool-icon">
+                            <i class="fas fa-file-word"></i>
+                        </div>
+                        <h3>DOCX to PDF</h3>
+                        <p>Convert Word documents to PDF format with one click</p>
+                        <div class="tool-badges">
+                            <span class="tool-badge new">New</span>
+                            <span class="tool-badge popular">Popular</span>
+                        </div>
+                        <div class="tool-meta">
+                            <span class="usage-count">
+                                <i class="fas fa-users"></i>
+                                <span>3,789 uses</span>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Compact Grid -->
+        <section style="margin-bottom: 3rem;">
+            <h2 class="section-title">Compact Grid Layout</h2>
+            <div class="tools-grid compact">
+                <div class="tool-card">
+                    <a href="#">
+                        <div class="tool-icon">
+                            <i class="fas fa-file-excel"></i>
+                        </div>
+                        <h3>XLSX to PDF</h3>
+                        <p>Convert Excel spreadsheets to PDF</p>
+                        <div class="tool-meta">
+                            <span class="usage-count">
+                                <i class="fas fa-users"></i>
+                                <span>567 uses</span>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="tool-card">
+                    <a href="#">
+                        <div class="tool-icon">
+                            <i class="fas fa-file-powerpoint"></i>
+                        </div>
+                        <h3>PPTX to PDF</h3>
+                        <p>Convert PowerPoint to PDF</p>
+                        <div class="tool-meta">
+                            <span class="usage-count">
+                                <i class="fas fa-users"></i>
+                                <span>432 uses</span>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="tool-card">
+                    <a href="#">
+                        <div class="tool-icon">
+                            <i class="fas fa-object-group"></i>
+                        </div>
+                        <h3>Merge PDF</h3>
+                        <p>Combine multiple PDFs into one</p>
+                        <div class="tool-meta">
+                            <span class="usage-count">
+                                <i class="fas fa-users"></i>
+                                <span>1,890 uses</span>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading States -->
+        <section style="margin-bottom: 3rem;">
+            <h2 class="section-title">Loading States</h2>
+            <div class="tools-grid">
+                {% include 'includes/tool_card_skeleton.html' %}
+                {% include 'includes/tool_card_skeleton.html' %}
+                {% include 'includes/tool_card_skeleton.html' %}
+            </div>
+        </section>
+
+        <!-- Disabled State -->
+        <section style="margin-bottom: 3rem;">
+            <h2 class="section-title">Disabled State</h2>
+            <div class="tools-grid">
+                <div class="tool-card disabled">
+                    <a href="#" onclick="return false;">
+                        <div class="tool-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h3>Video Compressor</h3>
+                        <p>Temporarily unavailable for maintenance</p>
+                        <div class="tool-meta">
+                            <span class="usage-count">
+                                <i class="fas fa-users"></i>
+                                <span>234 uses</span>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tool Cards with Action Buttons -->
+        <section style="margin-bottom: 3rem;">
+            <h2 class="section-title">Tool Cards with Actions</h2>
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-cut"></i>
+                    </div>
+                    <h3>Split PDF</h3>
+                    <p>Extract pages from PDF documents</p>
+                    <div class="tool-meta">
+                        <span class="usage-count">
+                            <i class="fas fa-users"></i>
+                            <span>678 uses</span>
+                        </span>
+                    </div>
+                    <div class="tool-card-actions">
+                        <a href="#" class="btn btn-primary btn-sm">Use Tool</a>
+                        <a href="#" class="btn btn-outline btn-sm">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Responsive Grid Demo -->
+        <section style="margin-bottom: 3rem;">
+            <h2 class="section-title">Responsive Grid (Resize Browser)</h2>
+            <p style="text-align: center; color: var(--gray-600); margin-bottom: 2rem;">
+                This grid automatically adjusts from 1 column (mobile) to 4+ columns (desktop)
+            </p>
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <a href="#">
+                        <div class="tool-icon"><i class="fas fa-file-pdf"></i></div>
+                        <h3>Tool 1</h3>
+                        <p>Description for tool 1</p>
+                        <div class="tool-meta">
+                            <span class="usage-count"><i class="fas fa-users"></i> <span>100 uses</span></span>
+                        </div>
+                    </a>
+                </div>
+                <div class="tool-card">
+                    <a href="#">
+                        <div class="tool-icon"><i class="fas fa-file-word"></i></div>
+                        <h3>Tool 2</h3>
+                        <p>Description for tool 2</p>
+                        <div class="tool-meta">
+                            <span class="usage-count"><i class="fas fa-users"></i> <span>200 uses</span></span>
+                        </div>
+                    </a>
+                </div>
+                <div class="tool-card">
+                    <a href="#">
+                        <div class="tool-icon"><i class="fas fa-file-excel"></i></div>
+                        <h3>Tool 3</h3>
+                        <p>Description for tool 3</p>
+                        <div class="tool-meta">
+                            <span class="usage-count"><i class="fas fa-users"></i> <span>300 uses</span></span>
+                        </div>
+                    </a>
+                </div>
+                <div class="tool-card">
+                    <a href="#">
+                        <div class="tool-icon"><i class="fas fa-file-powerpoint"></i></div>
+                        <h3>Tool 4</h3>
+                        <p>Description for tool 4</p>
+                        <div class="tool-meta">
+                            <span class="usage-count"><i class="fas fa-users"></i> <span>400 uses</span></span>
+                        </div>
+                    </a>
+                </div>
+                <div class="tool-card">
+                    <a href="#">
+                        <div class="tool-icon"><i class="fas fa-image"></i></div>
+                        <h3>Tool 5</h3>
+                        <p>Description for tool 5</p>
+                        <div class="tool-meta">
+                            <span class="usage-count"><i class="fas fa-users"></i> <span>500 uses</span></span>
+                        </div>
+                    </a>
+                </div>
+                <div class="tool-card">
+                    <a href="#">
+                        <div class="tool-icon"><i class="fas fa-compress"></i></div>
+                        <h3>Tool 6</h3>
+                        <p>Description for tool 6</p>
+                        <div class="tool-meta">
+                            <span class="usage-count"><i class="fas fa-users"></i> <span>600 uses</span></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="{% static 'js/tool-cards.js' %}"></script>
+</body>
+</html>

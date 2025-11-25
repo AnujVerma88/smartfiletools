@@ -1,0 +1,31 @@
+{% comment %}
+Reusable Tool Card Component
+Usage: {% include 'includes/tool_card.html' with tool=tool_object %}
+{% endcomment %}
+
+<div class="tool-card {% if tool.is_premium %}premium{% endif %} {% if featured %}featured{% endif %}">
+    <a href="{% url 'tools:tool_detail' slug=tool.slug %}" aria-label="{{ tool.name }} - {{ tool.description|truncatewords:10 }}">
+        <div class="tool-icon" aria-hidden="true">
+            {% if tool.icon %}
+                <i class="{{ tool.icon }}"></i>
+            {% else %}
+                <i class="fas fa-file"></i>
+            {% endif %}
+        </div>
+        
+        <h3>{{ tool.name }}</h3>
+        
+        <p>{{ tool.description|truncatewords:12 }}</p>
+        
+        <div class="tool-meta">
+            <span class="usage-count" aria-label="{{ tool.usage_count }} users">
+                <i class="fas fa-users" aria-hidden="true"></i>
+                <span>{{ tool.usage_count }} uses</span>
+            </span>
+            
+            {% if tool.is_premium %}
+                <span class="premium-badge" aria-label="Premium feature">Premium</span>
+            {% endif %}
+        </div>
+    </a>
+</div>

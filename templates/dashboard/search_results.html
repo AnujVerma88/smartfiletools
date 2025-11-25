@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search Results for "{{ query }}" - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="search-results-container">
+    <div class="container">
+        <!-- Search Header -->
+        <div class="search-header">
+            <h1>Search Results</h1>
+            {% if query %}
+            <p class="search-query">Showing results for: <strong>"{{ query }}"</strong></p>
+            {% endif %}
+            
+            <!-- Search Form -->
+            <form action="{% url 'dashboard:search' %}" method="get" class="search-form">
+                <input type="text" name="q" value="{{ query }}" placeholder="Search for tools..." />
+                <button type="submit">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </form>
+        </div>
+
+        <!-- Results -->
+        {% if tools %}
+        <div class="search-results">
+            <p class="results-count">Found {{ tools.count }} tool{{ tools.count|pluralize }}</p>
+            
+            <div class="tools-grid">
+                {% for tool in tools %}
+                <div class="tool-card">
+                    <a href="{% url 'tools:tool_detail' slug=tool.slug %}">
+                        <div class="tool-icon">
+                            {% if tool.icon %}
+                                <i class="{{ tool.icon }}"></i>
+                            {% else %}
+                                <i class="fas fa-file"></i>
+                            {% endif %}
+                        </div>
+                        <h3>{{ tool.name }}</h3>
+                        <p>{{ tool.description|truncatewords:15 }}</p>
+                        <div class="tool-meta">
+                            <span class="category-badge">{{ tool.category.name }}</span>
+                            {% if tool.is_premium %}
+                            <span class="premium-badge">Premium</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="no-results">
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h2>No Results Found</h2>
+                {% if query %}
+                <p>We couldn't find any tools matching "{{ query }}"</p>
+                {% else %}
+                <p>Please enter a search term</p>
+                {% endif %}
+                <a href="{% url 'tools:tool_list' %}" class="btn btn-primary">Browse All Tools</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

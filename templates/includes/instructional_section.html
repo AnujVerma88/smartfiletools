@@ -1,0 +1,76 @@
+{% load static %}
+
+<!-- Instructional Section with HowTo Schema -->
+<section class="instructional-section">
+    <div class="container">
+        <!-- How to Use Section -->
+        <div class="how-to-use">
+            <h2>How to Use {{ tool.name }}</h2>
+            
+            <div class="steps-container">
+                {% for step in tool.get_all_steps %}
+                <div class="instruction-step">
+                    <div class="step-number">{{ forloop.counter }}</div>
+                    <div class="step-content">
+                        <h3>{{ step.title }}</h3>
+                        <p>{{ step.description }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Tool Description Section -->
+        {% if tool.get_tool_description %}
+        <div class="tool-description-section">
+            <h2>About {{ tool.name }}</h2>
+            <div class="description-content">
+                <p>{{ tool.get_tool_description }}</p>
+                
+                {% if tool.input_format and tool.output_format %}
+                <div class="format-info">
+                    <div class="format-badge">
+                        <i class="fas fa-file-import"></i>
+                        <span>Input: {{ tool.input_format }}</span>
+                    </div>
+                    <div class="format-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                    <div class="format-badge">
+                        <i class="fas fa-file-export"></i>
+                        <span>Output: {{ tool.output_format }}</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- HowTo Schema Markup for SEO -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to Use {{ tool.name }}",
+    "description": "{{ tool.get_tool_description|striptags }}",
+    "image": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo/logo.png' %}",
+    "totalTime": "PT2M",
+    "tool": {
+        "@type": "HowToTool",
+        "name": "{{ tool.name }}"
+    },
+    "step": [
+        {% for step in tool.get_all_steps %}
+        {
+            "@type": "HowToStep",
+            "position": {{ forloop.counter }},
+            "name": "{{ step.title|striptags }}",
+            "text": "{{ step.description|striptags }}",
+            "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'tools:tool_detail' slug=tool.slug %}#step-{{ forloop.counter }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]
+}
+</script>

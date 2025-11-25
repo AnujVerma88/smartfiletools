@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pricing - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="pricing-page">
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="pricing-hero">
+            <h1>Simple, Transparent Pricing</h1>
+            <p class="lead">Choose the plan that's right for you</p>
+        </section>
+
+        <!-- Pricing Cards -->
+        <section class="pricing-cards">
+            <!-- Free Plan -->
+            <div class="pricing-card">
+                <div class="plan-header">
+                    <h3>Free</h3>
+                    <div class="price">
+                        <span class="currency">$</span>
+                        <span class="amount">0</span>
+                        <span class="period">/month</span>
+                    </div>
+                    <p class="plan-description">Perfect for occasional use</p>
+                </div>
+                
+                <div class="plan-features">
+                    <ul>
+                        <li><i class="fas fa-check"></i> 10 conversions per day</li>
+                        <li><i class="fas fa-check"></i> Maximum file size: 10MB</li>
+                        <li><i class="fas fa-check"></i> All conversion tools</li>
+                        <li><i class="fas fa-check"></i> Standard processing speed</li>
+                        <li><i class="fas fa-check"></i> 24-hour file storage</li>
+                        <li><i class="fas fa-times"></i> Priority support</li>
+                        <li><i class="fas fa-times"></i> No ads</li>
+                    </ul>
+                </div>
+                
+                <div class="plan-action">
+                    <a href="{% url 'accounts:register' %}" class="btn btn-outline">Get Started Free</a>
+                </div>
+            </div>
+
+            <!-- Premium Plan -->
+            <div class="pricing-card featured">
+                <div class="popular-badge">Most Popular</div>
+                <div class="plan-header">
+                    <h3>Premium</h3>
+                    <div class="price">
+                        <span class="currency">$</span>
+                        <span class="amount">9.99</span>
+                        <span class="period">/month</span>
+                    </div>
+                    <p class="plan-description">For power users and professionals</p>
+                </div>
+                
+                <div class="plan-features">
+                    <ul>
+                        <li><i class="fas fa-check"></i> <strong>Unlimited conversions</strong></li>
+                        <li><i class="fas fa-check"></i> Maximum file size: 500MB</li>
+                        <li><i class="fas fa-check"></i> All conversion tools</li>
+                        <li><i class="fas fa-check"></i> <strong>Priority processing</strong></li>
+                        <li><i class="fas fa-check"></i> 24-hour file storage</li>
+                        <li><i class="fas fa-check"></i> <strong>Priority email support</strong></li>
+                        <li><i class="fas fa-check"></i> <strong>Ad-free experience</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="plan-action">
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary">Upgrade to Premium</a>
+                </div>
+            </div>
+
+            <!-- Enterprise Plan -->
+            <div class="pricing-card">
+                <div class="plan-header">
+                    <h3>Enterprise</h3>
+                    <div class="price">
+                        <span class="amount">Custom</span>
+                    </div>
+                    <p class="plan-description">For teams and businesses</p>
+                </div>
+                
+                <div class="plan-features">
+                    <ul>
+                        <li><i class="fas fa-check"></i> <strong>Unlimited conversions</strong></li>
+                        <li><i class="fas fa-check"></i> Custom file size limits</li>
+                        <li><i class="fas fa-check"></i> All conversion tools</li>
+                        <li><i class="fas fa-check"></i> <strong>Dedicated processing</strong></li>
+                        <li><i class="fas fa-check"></i> Custom file retention</li>
+                        <li><i class="fas fa-check"></i> <strong>24/7 phone & email support</strong></li>
+                        <li><i class="fas fa-check"></i> <strong>API access</strong></li>
+                        <li><i class="fas fa-check"></i> <strong>Team management</strong></li>
+                        <li><i class="fas fa-check"></i> <strong>Custom integrations</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="plan-action">
+                    <a href="{% url 'dashboard:contact' %}" class="btn btn-outline">Contact Sales</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="pricing-faq">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h3>Can I cancel my subscription anytime?</h3>
+                    <p>Yes, you can cancel your subscription at any time. Your access will continue until the end of your current billing period.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>Do you offer refunds?</h3>
+                    <p>We offer a 30-day money-back guarantee. If you're not satisfied with Premium, contact us within 30 days for a full refund.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>What payment methods do you accept?</h3>
+                    <p>We accept all major credit cards (Visa, MasterCard, American Express) and PayPal.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>Can I upgrade or downgrade my plan?</h3>
+                    <p>Yes, you can change your plan at any time. Changes take effect immediately, and we'll prorate the charges.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>Is there a free trial for Premium?</h3>
+                    <p>We offer a 7-day free trial for Premium. No credit card required to start your trial.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>What happens to my files after conversion?</h3>
+                    <p>All files are automatically deleted from our servers after 24 hours for security and privacy.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Comparison Table -->
+        <section class="pricing-comparison">
+            <h2>Feature Comparison</h2>
+            
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Free</th>
+                            <th>Premium</th>
+                            <th>Enterprise</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Daily Conversions</td>
+                            <td>10</td>
+                            <td>Unlimited</td>
+                            <td>Unlimited</td>
+                        </tr>
+                        <tr>
+                            <td>Max File Size</td>
+                            <td>10MB</td>
+                            <td>500MB</td>
+                            <td>Custom</td>
+                        </tr>
+                        <tr>
+                            <td>Processing Speed</td>
+                            <td>Standard</td>
+                            <td>Priority</td>
+                            <td>Dedicated</td>
+                        </tr>
+                        <tr>
+                            <td>Ad-Free</td>
+                            <td><i class="fas fa-times"></i></td>
+                            <td><i class="fas fa-check"></i></td>
+                            <td><i class="fas fa-check"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Priority Support</td>
+                            <td><i class="fas fa-times"></i></td>
+                            <td><i class="fas fa-check"></i></td>
+                            <td><i class="fas fa-check"></i></td>
+                        </tr>
+                        <tr>
+                            <td>API Access</td>
+                            <td><i class="fas fa-times"></i></td>
+                            <td><i class="fas fa-times"></i></td>
+                            <td><i class="fas fa-check"></i></td>
+                        </tr>
+                        <tr>
+                            <td>Team Management</td>
+                            <td><i class="fas fa-times"></i></td>
+                            <td><i class="fas fa-times"></i></td>
+                            <td><i class="fas fa-check"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="pricing-cta">
+            <h2>Still Have Questions?</h2>
+            <p>Our team is here to help you choose the right plan for your needs.</p>
+            <a href="{% url 'dashboard:contact' %}" class="btn btn-primary">Contact Us</a>
+        </section>
+    </div>
+</div>
+{% endblock %}
