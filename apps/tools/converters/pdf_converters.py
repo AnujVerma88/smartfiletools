@@ -69,7 +69,7 @@ class PDFToDocxConverter(BaseConverter):
 @register_converter('docx_to_pdf')
 class DocxToPDFConverter(BaseConverter):
     """
-    Converter for DOCX to PDF format using LibreOffice/unoconv or docx2pdf fallback.
+    Converter for DOCX to PDF format using LibreOffice (Linux/Mac) or Word COM (Windows).
     """
     
     ALLOWED_INPUT_TYPES = [
@@ -79,6 +79,163 @@ class DocxToPDFConverter(BaseConverter):
     ALLOWED_INPUT_EXTENSIONS = ['docx', 'doc']
     MAX_FILE_SIZE_MB = 50
     OUTPUT_EXTENSION = 'pdf'
+    
+    def _convert_with_word(self, input_path, output_path):
+        """
+        Convert DOCX/DOC to PDF using Microsoft Word COM automation (Windows only).
+        
+        Args:
+            input_path: Path to input DOCX/DOC file
+            output_path: Path where output PDF file should be saved
+            
+        Raises:
+            ConversionError: If Word conversion fails
+        """
+        import os
+        
+        try:
+            import win32com.client
+        except ImportError:
+            raise ConversionError(
+                "win32com is not available. This method only works on Windows with pywin32 installed."
+            )
+        
+        word = None
+        doc = None
+        
+        try:
+            # Convert paths to absolute paths
+            abs_input = os.path.abspath(input_path)
+            abs_output = os.path.abspath(output_path)
+            
+            # Initialize Word application
+            word = win32com.client.Dispatch("Word.Application")
+            word.Visible = False
+            
+            # Open document
+            doc = word.Documents.Open(abs_input)
+            
+            # Save as PDF (format 17 is PDF)
+            doc.SaveAs(abs_output, FileFormat=17)
+            
+            self.logger.info(f"Word COM conversion successful: {input_path} -> {output_path}")
+            
+        except Exception as e:
+            error_msg = f"Word COM automation failed: {str(e)}"
+            self.logger.error(error_msg)
+            raise ConversionError(error_msg)
+            
+        finally:
+            # Clean up COM objects
+            try:
+                if doc:
+                    doc.Close()
+            except Exception as e:
+                self.logger.warning(f"Error closing document: {str(e)}")
+            
+            try:
+                if word:
+                    word.Quit()
+            except Exception as e:
+                self.logger.warning(f"Error quitting Word: {str(e)}")
+    
+    def _convert_with_libreoffice(self, input_path, output_path):
+        """
+        Convert DOCX/DOC to PDF using LibreOffice command-line (cross-platform).
+        
+        Args:
+            input_path: Path to input DOCX/DOC file
+            output_path: Path where output PDF file should be saved
+            
+        Raises:
+            ConversionError: If LibreOffice conversion fails
+        """
+        import os
+        import subprocess
+        from apps.tools.utils.platform_utils import get_libreoffice_path
+        
+        # Get LibreOffice executable path
+        libreoffice_path = get_libreoffice_path()
+        if not libreoffice_path:
+            raise ConversionError(
+                "LibreOffice is not installed or not found. "
+                "Please install LibreOffice to enable DOCX/DOC to PDF conversion.\n"
+                "Installation instructions:\n"
+                "  - Ubuntu/Debian: sudo apt-get install libreoffice\n"
+                "  - RHEL/CentOS: sudo yum install libreoffice\n"
+                "  - Windows: Download from https://www.libreoffice.org/download/\n"
+                "  - Mac: Download from https://www.libreoffice.org/download/"
+            )
+        
+        try:
+            # Convert to absolute paths
+            abs_input = os.path.abspath(input_path)
+            abs_output = os.path.abspath(output_path)
+            output_dir = os.path.dirname(abs_output)
+            
+            # Calculate timeout based on file size
+            file_size_mb = os.path.getsize(abs_input) / (1024 * 1024)
+            timeout = max(300, int(300 + (file_size_mb * 3)))
+            
+            # Build LibreOffice command
+            command = [
+                libreoffice_path,
+                '--headless',
+                '--convert-to', 'pdf',
+                '--outdir', output_dir,
+                abs_input
+            ]
+            
+            self.logger.info(f"Running LibreOffice conversion: {' '.join(command)}")
+            
+            # Run LibreOffice conversion
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                check=False
+            )
+            
+            # Check for errors
+            if result.returncode != 0:
+                error_msg = f"LibreOffice conversion failed with exit code {result.returncode}"
+                if result.stderr:
+                    error_msg += f"\nStderr: {result.stderr}"
+                if result.stdout:
+                    error_msg += f"\nStdout: {result.stdout}"
+                
+                self.logger.error(error_msg)
+                raise ConversionError(error_msg)
+            
+            # LibreOffice creates the output file with the same name as input but .pdf extension
+            input_filename = os.path.splitext(os.path.basename(abs_input))[0]
+            libreoffice_output = os.path.join(output_dir, f"{input_filename}.pdf")
+            
+            # If LibreOffice output is different from expected output, rename it
+            if libreoffice_output != abs_output and os.path.exists(libreoffice_output):
+                if os.path.exists(abs_output):
+                    os.remove(abs_output)
+                os.rename(libreoffice_output, abs_output)
+            
+            # Verify output file exists
+            if not os.path.exists(abs_output):
+                raise ConversionError(
+                    f"LibreOffice conversion completed but output file not found: {abs_output}"
+                )
+            
+            self.logger.info(f"LibreOffice conversion successful: {input_path} -> {output_path}")
+            
+        except subprocess.TimeoutExpired:
+            error_msg = f"LibreOffice conversion timed out after {timeout} seconds"
+            self.logger.error(error_msg)
+            raise ConversionError(error_msg)
+        except Exception as e:
+            if isinstance(e, ConversionError):
+                raise
+            error_msg = f"LibreOffice conversion failed: {str(e)}"
+            self.logger.error(error_msg)
+            raise ConversionError(error_msg)
     
     def convert(self, input_path, output_path):
         """
@@ -91,8 +248,7 @@ class DocxToPDFConverter(BaseConverter):
         Returns:
             dict: Conversion result with status and metadata
         """
-        import os
-        import win32com.client
+        from apps.tools.utils.platform_utils import get_platform, is_powerpoint_available
         
         start_time = time.time()
         self.log_conversion_start(input_path, output_path)
@@ -101,47 +257,19 @@ class DocxToPDFConverter(BaseConverter):
             # Validate input file
             self.validate_file(input_path)
             
-            input_path_str = str(input_path)
+            # Determine conversion method based on platform
+            current_platform = get_platform()
             
-            # Check if file is .doc or .docx
-            if input_path_str.lower().endswith('.doc') and not input_path_str.lower().endswith('.docx'):
-                # For .doc files, use Word COM automation directly
-                # since docx2pdf doesn't support .doc files
+            if current_platform == 'windows':
+                # On Windows, try Word COM first, then fall back to LibreOffice
                 try:
-                    word = win32com.client.Dispatch("Word.Application")
-                    word.Visible = False
-                    
-                    # Convert paths to absolute paths
-                    abs_input = os.path.abspath(input_path)
-                    abs_output = os.path.abspath(output_path)
-                    
-                    # Open document
-                    doc = word.Documents.Open(abs_input)
-                    
-                    # Save as PDF (format 17 is PDF)
-                    doc.SaveAs(abs_output, FileFormat=17)
-                    doc.Close()
-                    word.Quit()
-                    
-                except Exception as e:
-                    try:
-                        word.Quit()
-                    except:
-                        pass
-                    raise ConversionError(f"Failed to convert .doc file: {str(e)}")
+                    self._convert_with_word(input_path, output_path)
+                except ConversionError as e:
+                    self.logger.warning(f"Word COM failed, trying LibreOffice: {str(e)}")
+                    self._convert_with_libreoffice(input_path, output_path)
             else:
-                # For .docx files, use docx2pdf library
-                try:
-                    docx2pdf_convert(input_path, output_path)
-                except Exception as word_error:
-                    # If docx2pdf fails, provide helpful error message
-                    error_msg = str(word_error)
-                    if 'Word.Application' in error_msg or 'Quit' in error_msg:
-                        raise ConversionError(
-                            "Microsoft Word is not installed or not accessible. "
-                            "Please install Microsoft Word or use LibreOffice for DOCX to PDF conversion."
-                        )
-                    raise
+                # On Linux/Mac, use LibreOffice
+                self._convert_with_libreoffice(input_path, output_path)
             
             duration = time.time() - start_time
             self.log_conversion_success(input_path, output_path, duration)
@@ -317,6 +445,111 @@ class PPTXToPDFConverter(BaseConverter):
                     powerpoint.Quit()
             except Exception as e:
                 self.logger.warning(f"Error quitting PowerPoint: {str(e)}")
+    
+    def _convert_with_libreoffice(self, input_path, output_path):
+        """
+        Convert PPTX to PDF using LibreOffice command-line (cross-platform).
+        
+        Args:
+            input_path: Path to input PPTX file
+            output_path: Path where output PDF file should be saved
+            
+        Raises:
+            ConversionError: If LibreOffice conversion fails
+        """
+        import os
+        import subprocess
+        from apps.tools.utils.platform_utils import get_libreoffice_path
+        
+        # Get LibreOffice executable path
+        libreoffice_path = get_libreoffice_path()
+        if not libreoffice_path:
+            raise ConversionError(
+                "LibreOffice is not installed or not found. "
+                "Please install LibreOffice to enable PPTX to PDF conversion.\n"
+                "Installation instructions:\n"
+                "  - Ubuntu/Debian: sudo apt-get install libreoffice\n"
+                "  - RHEL/CentOS: sudo yum install libreoffice\n"
+                "  - Windows: Download from https://www.libreoffice.org/download/\n"
+                "  - Mac: Download from https://www.libreoffice.org/download/"
+            )
+        
+        try:
+            # Convert to absolute paths
+            abs_input = os.path.abspath(input_path)
+            abs_output = os.path.abspath(output_path)
+            output_dir = os.path.dirname(abs_output)
+            
+            # Calculate timeout based on file size (300 seconds base, scale with file size)
+            file_size_mb = os.path.getsize(abs_input) / (1024 * 1024)
+            timeout = max(300, int(300 + (file_size_mb * 3)))  # Add 3 seconds per MB
+            
+            # Build LibreOffice command
+            command = [
+                libreoffice_path,
+                '--headless',
+                '--convert-to', 'pdf',
+                '--outdir', output_dir,
+                abs_input
+            ]
+            
+            self.logger.info(f"Running LibreOffice conversion: {' '.join(command)}")
+            
+            # Run LibreOffice conversion
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                check=False  # Don't raise exception on non-zero exit code
+            )
+            
+            # Check for errors
+            if result.returncode != 0:
+                error_msg = f"LibreOffice conversion failed with exit code {result.returncode}"
+                if result.stderr:
+                    error_msg += f"\nStderr: {result.stderr}"
+                if result.stdout:
+                    error_msg += f"\nStdout: {result.stdout}"
+                
+                self.logger.error(error_msg)
+                raise ConversionError(error_msg)
+            
+            # LibreOffice creates the output file with the same name as input but .pdf extension
+            # We need to rename it to the expected output path
+            input_filename = os.path.splitext(os.path.basename(abs_input))[0]
+            libreoffice_output = os.path.join(output_dir, f"{input_filename}.pdf")
+            
+            # If LibreOffice output is different from expected output, rename it
+            if libreoffice_output != abs_output and os.path.exists(libreoffice_output):
+                if os.path.exists(abs_output):
+                    os.remove(abs_output)
+                os.rename(libreoffice_output, abs_output)
+            
+            # Verify output file exists
+            if not os.path.exists(abs_output):
+                raise ConversionError(
+                    f"LibreOffice conversion completed but output file not found: {abs_output}"
+                )
+            
+            self.logger.info(f"LibreOffice conversion successful: {input_path} -> {output_path}")
+            
+            # Log stdout/stderr for debugging if present
+            if result.stdout:
+                self.logger.debug(f"LibreOffice stdout: {result.stdout}")
+            if result.stderr:
+                self.logger.debug(f"LibreOffice stderr: {result.stderr}")
+                
+        except subprocess.TimeoutExpired as e:
+            error_msg = f"LibreOffice conversion timed out after {timeout} seconds"
+            self.logger.error(error_msg)
+            raise ConversionError(error_msg)
+        except Exception as e:
+            if isinstance(e, ConversionError):
+                raise
+            error_msg = f"LibreOffice conversion failed: {str(e)}"
+            self.logger.error(error_msg)
+            raise ConversionError(error_msg)
     
     def convert(self, input_path, output_path):
         """

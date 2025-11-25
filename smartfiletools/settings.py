@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security Settings
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-p$5m!@8&k@4rtj3f+(sxk5xy9!6zpqf$uz)k_c=m1fi%pql-wb')
 DEBUG = config('DEBUG', default='True', cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost,0.0.0.0').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='www.smarttoolpdf.com,51.20.35.221,smarttoolpdf.com').split(',')
 
 # Rate Limiting - Disable in development
 RATE_LIMITING_ENABLED = config('RATE_LIMITING_ENABLED', default=not DEBUG, cast=bool)
@@ -129,7 +129,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Celery Configuration
-CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://172.24.175.189:6379/0')
+CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://127.0.0.1:6379/0')
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
@@ -146,7 +146,7 @@ CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes
 #     CELERY_TASK_EAGER_PROPAGATES = True
 
 # Redis Configuration
-REDIS_HOST = config('REDIS_HOST', default='172.24.175.189')
+REDIS_HOST = config('REDIS_HOST', default='127.0.0.1')
 REDIS_PORT = config('REDIS_PORT', default='6379')
 REDIS_DB = config('REDIS_DB', default='0')
 

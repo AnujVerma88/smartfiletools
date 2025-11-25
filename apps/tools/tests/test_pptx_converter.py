@@ -62,6 +62,41 @@ class TestPPTXConverterMethodSelection(unittest.TestCase):
                         )
 
 
+    @settings(max_examples=100)
+    @given(
+        libreoffice_available=st.booleans(),
+    )
+    def test_method_selection_on_linux(self, libreoffice_available):
+        """
+        Feature: pptx-to-pdf-quality-improvement, Property 5: Method selection on Linux
+        
+        For any conversion on Linux platform, LibreOffice must be used as the 
+        conversion method.
+        
+        **Validates: Requirements 4.2**
+        """
+        # Mock platform detection to return Linux
+        with patch('apps.tools.utils.platform_utils.get_platform', return_value='linux'):
+            with patch('apps.tools.utils.platform_utils.is_libreoffice_available', return_value=libreoffice_available):
+                
+                from apps.tools.utils.platform_utils import get_available_conversion_method
+                
+                # Get the method that should be selected
+                method = get_available_conversion_method()
+                
+                # Verify correct method selection on Linux
+                if libreoffice_available:
+                    self.assertEqual(
+                        method, 'libreoffice',
+                        "On Linux with LibreOffice available, should select 'libreoffice'"
+                    )
+                else:
+                    self.assertEqual(
+                        method, 'none',
+                        "On Linux without LibreOffice, should return 'none'"
+                    )
+
+
 class TestPowerPointCOMConversion(unittest.TestCase):
     """
     Unit tests for PowerPoint COM automation conversion method.
