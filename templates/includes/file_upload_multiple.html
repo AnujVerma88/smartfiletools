@@ -1,0 +1,198 @@
+{% load static %}
+{% comment %}
+Multi-File Upload Interface Component for PDF Merge
+Usage: {% include 'includes/file_upload_multiple.html' with tool=tool_object %}
+{% endcomment %}
+
+{% csrf_token %}
+
+<div class="file-upload-container multi-file">
+    <!-- Upload Zone -->
+    <div class="file-upload-zone" id="fileUploadZone" 
+         data-max-size="{{ tool.max_file_size_mb }}"
+         data-accepted-formats="{{ tool.supported_formats|join:',' }}"
+         aria-label="Multiple file upload area">
+        
+        <div class="file-upload-icon" aria-hidden="true">
+            <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+        
+        <div class="file-upload-text">
+            Drag & Drop Multiple PDF Files Here
+        </div>
+        
+        <div class="file-upload-hint">
+            or <strong>tap to browse</strong> and select multiple files
+            <br>
+            Maximum file size per file: <strong>{{ tool.max_file_size_mb }}MB</strong>
+        </div>
+        
+        <button type="button" class="file-upload-browse-btn" id="browseFilesBtn">
+            <i class="fas fa-folder-open"></i>
+            <span>Browse Files</span>
+        </button>
+        
+        <input type="file" 
+               id="fileInput" 
+               class="file-input"
+               accept=".pdf,application/pdf"
+               multiple
+               aria-label="Multiple file input">
+    </div>
+    
+    <!-- Info Banner -->
+    <div class="multi-file-info" style="background: #EFF6FF; border-left: 4px solid #3B82F6; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+        <div style="display: flex; align-items: start; gap: 0.75rem;">
+            <i class="fas fa-info-circle" style="color: #3B82F6; font-size: 1.25rem; margin-top: 0.125rem;"></i>
+            <div>
+                <p style="font-weight: 600; color: #1E40AF; margin-bottom: 0.25rem; font-size: 0.875rem;">How to merge PDFs:</p>
+                <ol style="margin: 0; padding-left: 1.25rem; color: #1E40AF; font-size: 0.875rem;">
+                    <li>Select or drag multiple PDF files (minimum 2 files)</li>
+                    <li>Arrange files in the order you want them merged</li>
+                    <li>Click "Merge PDFs" to combine them into one file</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Selected Files List -->
+    <div class="files-selected-list" id="filesSelectedList" style="display: none; margin-top: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.125rem; color: #111827; margin: 0;">
+                <i class="fas fa-file-pdf" style="color: #EF4444;"></i>
+                Selected Files (<span id="fileCount">0</span>)
+            </h3>
+            <button type="button" class="btn-text" id="clearAllBtn" style="color: #EF4444; font-size: 0.875rem; background: none; border: none; cursor: pointer; padding: 0.25rem 0.5rem;">
+                <i class="fas fa-trash"></i> Clear All
+            </button>
+        </div>
+        
+        <div id="filesList" class="files-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <!-- Files will be added here dynamically -->
+        </div>
+    </div>
+    
+    <!-- Error Message -->
+    <div class="file-upload-error" id="fileUploadError" style="display: none; background: #FEE2E2; border-left: 4px solid #EF4444; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-exclamation-triangle" style="color: #EF4444; font-size: 1.25rem;"></i>
+            <span id="fileUploadErrorText" style="color: #991B1B; font-size: 0.875rem;">Error message here</span>
+        </div>
+    </div>
+    
+    <!-- Merge Button -->
+    <button type="button" class="convert-btn" id="mergeBtn" style="display: none;" disabled>
+        <i class="fas fa-object-group convert-btn-icon"></i>
+        <span>Merge PDFs</span>
+    </button>
+    
+    <!-- Upload Progress -->
+    <div class="upload-progress-container" id="uploadProgressContainer" style="display: none; margin-top: 1.5rem;">
+        <div class="upload-progress-header" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span style="font-weight: 600; color: #111827;">Merging PDFs...</span>
+            <span id="uploadPercentage" style="font-weight: 600; color: #14B8A6;">0%</span>
+        </div>
+        <div style="background: #E5E7EB; border-radius: 9999px; height: 8px; overflow: hidden;">
+            <div id="uploadProgressBar" style="background: linear-gradient(90deg, #14B8A6, #0F766E); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+        </div>
+    </div>
+    
+    <!-- Success Message -->
+    <div class="upload-status success" id="uploadStatus" style="display: none; background: #D1FAE5; border-left: 4px solid #10B981; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-check-circle" style="color: #10B981; font-size: 1.5rem;"></i>
+            <div>
+                <p style="font-weight: 600; color: #065F46; margin-bottom: 0.25rem;">Success!</p>
+                <p id="uploadStatusText" style="color: #047857; font-size: 0.875rem; margin: 0;">PDFs merged successfully!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include the multi-file upload JavaScript -->
+<script src="{% static 'js/file-upload-multiple.js' %}" defer></script>
+
+<style>
+.files-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.file-item {
+    background: white;
+    border: 2px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    cursor: move;
+}
+
+.file-item:hover {
+    border-color: #14B8A6;
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.1);
+}
+
+.file-item.dragging {
+    opacity: 0.5;
+}
+
+.file-item-drag-handle {
+    color: #9CA3AF;
+    cursor: grab;
+    font-size: 1.25rem;
+}
+
+.file-item-drag-handle:active {
+    cursor: grabbing;
+}
+
+.file-item-icon {
+    color: #EF4444;
+    font-size: 2rem;
+}
+
+.file-item-details {
+    flex: 1;
+}
+
+.file-item-name {
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.25rem;
+    word-break: break-word;
+}
+
+.file-item-size {
+    color: #6B7280;
+    font-size: 0.875rem;
+}
+
+.file-item-remove {
+    background: #FEE2E2;
+    color: #EF4444;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-item-remove:hover {
+    background: #EF4444;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .file-item {
+        padding: 0.75rem;
+    }
+    
+    .file-item-icon {
+        font-size: 1.5rem;
+    }
+}
+</style>
+

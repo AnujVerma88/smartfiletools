@@ -32,6 +32,10 @@ class APIKeyAuthenticationMiddleware:
             if self._is_public_endpoint(request.path):
                 return self.get_response(request)
             
+            # Skip API key check if user is authenticated via session (web interface)
+            if request.user.is_authenticated:
+                return self.get_response(request)
+            
             # Extract API key from request
             api_key = self._extract_api_key(request)
             

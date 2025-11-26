@@ -103,6 +103,12 @@ class ToolDetailView(DetailView):
             is_active=True
         ).exclude(id=tool.id).order_by('display_order')[:4]
         
+        # Check if tool requires multiple files (e.g., merge PDF)
+        context['requires_multiple_files'] = tool.tool_type == 'merge_pdf'
+        
+        # Check if tool requires split options (e.g., split PDF)
+        context['requires_split_options'] = tool.tool_type == 'split_pdf'
+        
         return context
 
 

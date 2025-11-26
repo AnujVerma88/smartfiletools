@@ -11,6 +11,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('search/', views.search_tools_view, name='search'),
     path('upgrade/', views.upgrade_view, name='upgrade'),
+    path('checkout/', views.checkout_view, name='checkout'),
     path('billing/', views.billing_view, name='billing'),
     path('privacy/', views.privacy_view, name='privacy'),
     path('terms/', views.terms_view, name='terms'),

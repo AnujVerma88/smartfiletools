@@ -40,12 +40,18 @@
             {% if needs_premium %}
             <div class="premium-notice">
                 <i class="fas fa-crown"></i>
-                <p>This tool requires a premium account. <a href="{% url 'pricing' %}">Upgrade now</a> to access all features.</p>
+                <p>This tool requires a premium account. <a href="{% url 'dashboard:pricing' %}">Upgrade now</a> to access all features.</p>
             </div>
             {% else %}
             <div class="upload-container">
-                <h2>Upload Your File</h2>
-                {% include 'includes/file_upload.html' %}
+                <h2>{% if requires_multiple_files %}Upload Your Files{% elif requires_split_options %}Upload Your PDF{% else %}Upload Your File{% endif %}</h2>
+                {% if requires_multiple_files %}
+                    {% include 'includes/file_upload_multiple.html' %}
+                {% elif requires_split_options %}
+                    {% include 'includes/file_upload_split.html' %}
+                {% else %}
+                    {% include 'includes/file_upload.html' %}
+                {% endif %}
                 
                 <div class="file-info">
                     <div class="info-item">

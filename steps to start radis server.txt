@@ -14,3 +14,11 @@ root@ip-172-31-22-128:/app/smartfiletools#
 
 gunicorn service
 root@ip-172-31-22-128:/app/smartfiletools# sudo systemctl restart smartfiletools.service
+
+
+
+sudo systemctl restart smartfiletools.service
+sudo systemctl restart smartfiletools
+sudo systemctl restart smartfiletools-celery
+sudo systemctl restart smartfiletools-celerybeat
+sudo systemctl restart nginx

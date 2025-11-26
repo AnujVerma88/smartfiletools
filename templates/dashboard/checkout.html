@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="checkout-page" style="background: #F9FAFB; padding: 3rem 0; min-height: 80vh;">
+    <div class="container" style="max-width: 900px; margin: 0 auto;">
+        <!-- Header -->
+        <div class="checkout-header" style="text-align: center; margin-bottom: 3rem;">
+            <h1 style="font-size: 2.5rem; color: #111827; margin-bottom: 0.5rem;">Complete Your Purchase</h1>
+            <p style="color: #6B7280; font-size: 1.125rem;">Upgrade to Premium and unlock all features</p>
+        </div>
+
+        <div class="checkout-content" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <!-- Order Summary -->
+            <div class="order-summary" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); height: fit-content;">
+                <h2 style="font-size: 1.5rem; color: #111827; margin-bottom: 1.5rem; border-bottom: 2px solid #E5E7EB; padding-bottom: 1rem;">
+                    <i class="fas fa-shopping-cart"></i> Order Summary
+                </h2>
+                
+                <div class="plan-details" style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="font-size: 1.25rem; color: #111827; margin-bottom: 0.25rem;">
+                                <i class="fas fa-crown" style="color: #FFA500;"></i> {{ plan_name }} Plan
+                            </h3>
+                            <p style="color: #6B7280; font-size: 0.875rem;">Monthly subscription</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="font-size: 1.75rem; font-weight: 700; color: #14B8A6;">${{ plan_price }}</p>
+                            <p style="color: #6B7280; font-size: 0.875rem;">per month</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="features-included" style="background: #F9FAFB; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <h4 style="font-size: 1rem; color: #111827; margin-bottom: 1rem; font-weight: 600;">What's Included:</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; color: #374151;">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span>Unlimited conversions</span>
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; color: #374151;">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span>Files up to 500MB</span>
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; color: #374151;">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span>All premium tools</span>
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; color: #374151;">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span>Priority processing</span>
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; color: #374151;">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span>Ad-free experience</span>
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; color: #374151;">
+                            <i class="fas fa-check-circle" style="color: #10B981;"></i>
+                            <span>Priority support</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="total" style="border-top: 2px solid #E5E7EB; padding-top: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 1.25rem; font-weight: 600; color: #111827;">Total</span>
+                        <span style="font-size: 2rem; font-weight: 700; color: #14B8A6;">${{ plan_price }}</span>
+                    </div>
+                    <p style="color: #6B7280; font-size: 0.875rem; margin-top: 0.5rem; text-align: right;">Billed monthly</p>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="payment-section" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h2 style="font-size: 1.5rem; color: #111827; margin-bottom: 1.5rem; border-bottom: 2px solid #E5E7EB; padding-bottom: 1rem;">
+                    <i class="fas fa-credit-card"></i> Payment Method
+                </h2>
+
+                <!-- Payment Tabs -->
+                <div class="payment-tabs" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                    <button class="tab-btn active" onclick="showPaymentMethod('qr')" style="flex: 1; padding: 0.75rem; border: 2px solid #14B8A6; background: #14B8A6; color: white; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                        <i class="fas fa-qrcode"></i> QR Code
+                    </button>
+                    <button class="tab-btn" onclick="showPaymentMethod('card')" style="flex: 1; padding: 0.75rem; border: 2px solid #E5E7EB; background: white; color: #6B7280; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                        <i class="fas fa-credit-card"></i> Card
+                    </button>
+                </div>
+
+                <!-- QR Code Payment -->
+                <div id="qr-payment" class="payment-method">
+                    <div style="text-align: center;">
+                        <h3 style="font-size: 1.125rem; color: #111827; margin-bottom: 1rem;">Scan to Pay</h3>
+                        <p style="color: #6B7280; font-size: 0.875rem; margin-bottom: 1.5rem;">Scan this QR code with your payment app</p>
+                        
+                        <!-- QR Code Container -->
+                        <div style="background: #F9FAFB; border: 2px solid #E5E7EB; border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; display: inline-block;">
+                            <div id="qrcode" style="display: flex; justify-content: center; align-items: center;"></div>
+                        </div>
+
+                        <!-- Payment Instructions -->
+                        <div style="background: #EFF6FF; border-left: 4px solid #3B82F6; padding: 1rem; border-radius: 8px; text-align: left; margin-bottom: 1.5rem;">
+                            <h4 style="font-size: 0.875rem; font-weight: 600; color: #1E40AF; margin-bottom: 0.5rem;">
+                                <i class="fas fa-info-circle"></i> Payment Instructions:
+                            </h4>
+                            <ol style="margin: 0; padding-left: 1.5rem; color: #1E40AF; font-size: 0.875rem;">
+                                <li>Open your payment app (PayPal, Venmo, etc.)</li>
+                                <li>Scan the QR code above</li>
+                                <li>Complete the payment of ${{ plan_price }}</li>
+                                <li>Send payment confirmation to: <strong>support@smarttoolpdf.com</strong></li>
+                            </ol>
+                        </div>
+
+                        <!-- Alternative Payment Info -->
+                        <div style="background: #F9FAFB; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                            <p style="color: #6B7280; font-size: 0.875rem; margin-bottom: 0.5rem;">Or send payment directly to:</p>
+                            <p style="font-weight: 600; color: #111827; font-size: 1rem; margin-bottom: 0.25rem;">support@smarttoolpdf.com</p>
+                            <p style="color: #6B7280; font-size: 0.75rem;">Include your email: {{ user.email }}</p>
+                        </div>
+
+                        <button onclick="confirmPayment()" style="width: 100%; padding: 1rem; background: #14B8A6; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s;">
+                            <i class="fas fa-check-circle"></i> I've Completed Payment
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card Payment (Coming Soon) -->
+                <div id="card-payment" class="payment-method" style="display: none;">
+                    <div style="text-align: center; padding: 3rem 1rem;">
+                        <i class="fas fa-credit-card" style="font-size: 4rem; color: #E5E7EB; margin-bottom: 1rem;"></i>
+                        <h3 style="font-size: 1.25rem; color: #111827; margin-bottom: 0.5rem;">Card Payment Coming Soon</h3>
+                        <p style="color: #6B7280; margin-bottom: 1.5rem;">We're working on integrating card payments. For now, please use QR code payment.</p>
+                        <p style="color: #6B7280; font-size: 0.875rem;">
+                            Questions? Contact us at <a href="mailto:support@smarttoolpdf.com" style="color: #14B8A6; text-decoration: none; font-weight: 600;">support@smarttoolpdf.com</a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Security Notice -->
+                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: #F0FDF4; border-radius: 8px; margin-top: 1.5rem;">
+                    <i class="fas fa-shield-alt" style="color: #10B981; font-size: 1.5rem;"></i>
+                    <div>
+                        <p style="font-weight: 600; color: #065F46; font-size: 0.875rem; margin-bottom: 0.25rem;">Secure Payment</p>
+                        <p style="color: #047857; font-size: 0.75rem; margin: 0;">Your payment information is encrypted and secure</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Money Back Guarantee -->
+        <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <i class="fas fa-award" style="font-size: 3rem; color: #FFA500; margin-bottom: 1rem;"></i>
+            <h3 style="font-size: 1.25rem; color: #111827; margin-bottom: 0.5rem;">30-Day Money-Back Guarantee</h3>
+            <p style="color: #6B7280;">Not satisfied? Get a full refund within 30 days, no questions asked.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Include QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<script>
+// Generate QR Code
+document.addEventListener('DOMContentLoaded', function() {
+    const qrData = `Payment for SmartToolPDF Premium
+Amount: ${{ plan_price }} USD
+Email: {{ user.email }}
+Contact: support@smarttoolpdf.com`;
+    
+    new QRCode(document.getElementById("qrcode"), {
+        text: qrData,
+        width: 200,
+        height: 200,
+        colorDark: "#111827",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+});
+
+// Switch payment methods
+function showPaymentMethod(method) {
+    const qrPayment = document.getElementById('qr-payment');
+    const cardPayment = document.getElementById('card-payment');
+    const tabs = document.querySelectorAll('.tab-btn');
+    
+    tabs.forEach(tab => {
+        tab.style.background = 'white';
+        tab.style.color = '#6B7280';
+        tab.style.borderColor = '#E5E7EB';
+    });
+    
+    if (method === 'qr') {
+        qrPayment.style.display = 'block';
+        cardPayment.style.display = 'none';
+        tabs[0].style.background = '#14B8A6';
+        tabs[0].style.color = 'white';
+        tabs[0].style.borderColor = '#14B8A6';
+    } else {
+        qrPayment.style.display = 'none';
+        cardPayment.style.display = 'block';
+        tabs[1].style.background = '#14B8A6';
+        tabs[1].style.color = 'white';
+        tabs[1].style.borderColor = '#14B8A6';
+    }
+}
+
+// Confirm payment
+function confirmPayment() {
+    if (confirm('Have you completed the payment and sent confirmation to support@smarttoolpdf.com?')) {
+        alert('Thank you! We will verify your payment and activate your premium account within 24 hours. You will receive a confirmation email at {{ user.email }}');
+        window.location.href = '{% url "dashboard:dashboard" %}';
+    }
+}
+
+// Hover effects
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('mouseenter', function() {
+        if (!this.classList.contains('active')) {
+            this.style.borderColor = '#14B8A6';
+        }
+    });
+    btn.addEventListener('mouseleave', function() {
+        if (!this.classList.contains('active')) {
+            this.style.borderColor = '#E5E7EB';
+        }
+    });
+});
+</script>
+
+<style>
+@media (max-width: 768px) {
+    .checkout-content {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .checkout-header h1 {
+        font-size: 1.75rem !important;
+    }
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+</style>
+{% endblock %}

@@ -200,6 +200,20 @@ def upgrade_view(request):
 
 
 @login_required
+def checkout_view(request):
+    """
+    Checkout page for premium subscription.
+    """
+    context = {
+        'user': request.user,
+        'plan_name': 'Premium',
+        'plan_price': '9.99',
+        'plan_currency': 'USD',
+    }
+    return render(request, 'dashboard/checkout.html', context)
+
+
+@login_required
 def billing_view(request):
     """
     Billing and subscription management page.

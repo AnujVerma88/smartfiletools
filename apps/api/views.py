@@ -287,12 +287,308 @@ class ConvertImageToPDFView(BaseConversionView):
     tool_type = 'image_to_pdf'
 
 
-class MergePDFView(BaseConversionView):
+class MergePDFView(APIView):
+    """API endpoint for merging multiple PDF files."""
+    permission_classes = [permissions.IsAuthenticated]
     tool_type = 'merge_pdf'
+    
+    def post(self, request):
+        """Handle multiple file upload for PDF merge."""
+        import os
+        from datetime import datetime
+        from pathlib import Path
+        from django.conf import settings
+        from django.utils import timezone
+        from apps.tools.utils.converter_factory import get_converter
+        from apps.tools.utils.base_converter import ConversionError
+        
+        user = request.user
+        
+        # Check usage limits
+        if not user.is_premium and user.daily_usage_count >= user.credits:
+            return error_response(
+                message='Daily usage limit exceeded',
+                errors={
+                    'code': 'QUOTA_EXCEEDED',
+                    'details': f'You have reached your daily limit of {user.credits} conversions'
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS
+            )
+        
+        # Get uploaded files
+        files = request.FILES.getlist('files')
+        
+        if not files:
+            return error_response(
+                message='No files provided',
+                errors={'code': 'NO_FILES', 'details': 'Please upload at least 2 PDF files'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if len(files) < 2:
+            return error_response(
+                message='Insufficient files',
+                errors={'code': 'INSUFFICIENT_FILES', 'details': 'Please upload at least 2 PDF files to merge'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Validate all files are PDFs
+        for file in files:
+            if not file.name.lower().endswith('.pdf'):
+                return error_response(
+                    message='Invalid file type',
+                    errors={'code': 'INVALID_FILE_TYPE', 'details': f'File {file.name} is not a PDF'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Create conversion record
+        total_size = sum(f.size for f in files)
+        conversion = ConversionHistory.objects.create(
+            user=user,
+            tool_type=self.tool_type,
+            input_file=files[0],
+            file_size_before=total_size,
+            status='processing'
+        )
+        
+        try:
+            # Save all uploaded files temporarily
+            temp_dir = Path(settings.MEDIA_ROOT) / 'temp' / str(conversion.id)
+            temp_dir.mkdir(parents=True, exist_ok=True)
+            
+            saved_files = []
+            for idx, file in enumerate(files):
+                temp_path = temp_dir / f"{idx}_{file.name}"
+                with open(temp_path, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
+                saved_files.append(str(temp_path))
+            
+            # Prepare output path
+            output_dir = Path(settings.MEDIA_ROOT) / 'output' / datetime.now().strftime('%Y/%m/%d')
+            output_dir.mkdir(parents=True, exist_ok=True)
+            output_path = output_dir / f"merged_{conversion.id}.pdf"
+            
+            # Get converter and merge PDFs
+            converter = get_converter(self.tool_type)
+            result = converter.convert(
+                saved_files[0],  # First file as input_path
+                str(output_path),
+                additional_pdfs=saved_files[1:]  # Rest as additional files
+            )
+            
+            # Update conversion record
+            conversion.output_file.name = os.path.relpath(output_path, settings.MEDIA_ROOT)
+            conversion.status = 'completed'
+            conversion.completed_at = timezone.now()
+            conversion.file_size_after = os.path.getsize(output_path)
+            conversion.save()
+            
+            # Update usage
+            user.daily_usage_count += 1
+            user.save(update_fields=['daily_usage_count'])
+            
+            # Update tool usage
+            try:
+                tool = Tool.objects.get(tool_type=self.tool_type)
+                tool.increment_usage()
+            except Tool.DoesNotExist:
+                pass
+            
+            # Return success with download URL
+            download_url = request.build_absolute_uri(conversion.output_file.url)
+            
+            return success_response(
+                data={
+                    'conversion_id': conversion.id,
+                    'status': conversion.status,
+                    'tool_type': conversion.tool_type,
+                    'file_count': len(files),
+                    'total_size': total_size,
+                    'output_size': conversion.file_size_after,
+                    'download_url': download_url,
+                    'created_at': conversion.created_at.isoformat(),
+                },
+                message=f'Successfully merged {len(files)} PDF files',
+                status=status.HTTP_200_OK
+            )
+            
+        except ConversionError as e:
+            conversion.status = 'failed'
+            conversion.error_message = str(e)
+            conversion.save()
+            
+            return error_response(
+                message='Merge failed',
+                errors={'code': 'CONVERSION_ERROR', 'details': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+            
+        except Exception as e:
+            conversion.status = 'failed'
+            conversion.error_message = str(e)
+            conversion.save()
+            
+            return error_response(
+                message='Merge failed',
+                errors={'code': 'INTERNAL_ERROR', 'details': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
-class SplitPDFView(BaseConversionView):
+class SplitPDFView(APIView):
+    """API endpoint for splitting/extracting pages from PDF."""
+    permission_classes = [permissions.IsAuthenticated]
     tool_type = 'split_pdf'
+    
+    def post(self, request):
+        """Handle PDF split with custom page selection."""
+        import os
+        import json
+        from datetime import datetime
+        from pathlib import Path
+        from django.conf import settings
+        from django.utils import timezone
+        from apps.tools.utils.converter_factory import get_converter
+        from apps.tools.utils.base_converter import ConversionError
+        from PyPDF2 import PdfReader, PdfWriter
+        
+        user = request.user
+        
+        # Check usage limits
+        if not user.is_premium and user.daily_usage_count >= user.credits:
+            return error_response(
+                message='Daily usage limit exceeded',
+                errors={
+                    'code': 'QUOTA_EXCEEDED',
+                    'details': f'You have reached your daily limit of {user.credits} conversions'
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS
+            )
+        
+        # Get uploaded file
+        uploaded_file = request.FILES.get('file')
+        if not uploaded_file:
+            return error_response(
+                message='No file provided',
+                errors={'code': 'NO_FILE', 'details': 'Please upload a PDF file'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get selected pages
+        selected_pages_json = request.POST.get('selected_pages')
+        split_mode = request.POST.get('split_mode', 'all')
+        
+        # Create conversion record
+        conversion = ConversionHistory.objects.create(
+            user=user,
+            tool_type=self.tool_type,
+            input_file=uploaded_file,
+            file_size_before=uploaded_file.size,
+            status='processing'
+        )
+        
+        try:
+            # Save uploaded file temporarily
+            temp_dir = Path(settings.MEDIA_ROOT) / 'temp' / str(conversion.id)
+            temp_dir.mkdir(parents=True, exist_ok=True)
+            
+            input_path = temp_dir / uploaded_file.name
+            with open(input_path, 'wb+') as destination:
+                for chunk in uploaded_file.chunks():
+                    destination.write(chunk)
+            
+            # Prepare output path
+            output_dir = Path(settings.MEDIA_ROOT) / 'output' / datetime.now().strftime('%Y/%m/%d')
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Handle custom page selection
+            if selected_pages_json and split_mode == 'custom':
+                selected_pages = json.loads(selected_pages_json)
+                
+                # Create new PDF with selected pages
+                reader = PdfReader(str(input_path))
+                writer = PdfWriter()
+                
+                for page_num in selected_pages:
+                    if 1 <= page_num <= len(reader.pages):
+                        writer.add_page(reader.pages[page_num - 1])  # Convert to 0-indexed
+                
+                output_path = output_dir / f"extracted_{conversion.id}.pdf"
+                with open(output_path, 'wb') as output_file:
+                    writer.write(output_file)
+                
+                result = {
+                    'status': 'success',
+                    'output_path': str(output_path),
+                    'pages_extracted': len(selected_pages),
+                }
+            else:
+                # Use standard split converter
+                output_path = output_dir / f"split_{conversion.id}.pdf"
+                converter = get_converter(self.tool_type)
+                result = converter.convert(
+                    str(input_path),
+                    str(output_path),
+                    split_mode=split_mode
+                )
+            
+            # Update conversion record
+            conversion.output_file.name = os.path.relpath(output_path, settings.MEDIA_ROOT)
+            conversion.status = 'completed'
+            conversion.completed_at = timezone.now()
+            conversion.file_size_after = os.path.getsize(output_path)
+            conversion.save()
+            
+            # Update usage
+            user.daily_usage_count += 1
+            user.save(update_fields=['daily_usage_count'])
+            
+            # Update tool usage
+            try:
+                tool = Tool.objects.get(tool_type=self.tool_type)
+                tool.increment_usage()
+            except Tool.DoesNotExist:
+                pass
+            
+            # Return success with download URL
+            download_url = request.build_absolute_uri(conversion.output_file.url)
+            
+            return success_response(
+                data={
+                    'conversion_id': conversion.id,
+                    'status': conversion.status,
+                    'tool_type': conversion.tool_type,
+                    'output_size': conversion.file_size_after,
+                    'download_url': download_url,
+                    'pages_extracted': result.get('pages_extracted', result.get('files_created', 1)),
+                    'created_at': conversion.created_at.isoformat(),
+                },
+                message='PDF processed successfully',
+                status=status.HTTP_200_OK
+            )
+            
+        except ConversionError as e:
+            conversion.status = 'failed'
+            conversion.error_message = str(e)
+            conversion.save()
+            
+            return error_response(
+                message='Split failed',
+                errors={'code': 'CONVERSION_ERROR', 'details': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+            
+        except Exception as e:
+            conversion.status = 'failed'
+            conversion.error_message = str(e)
+            conversion.save()
+            
+            return error_response(
+                message='Split failed',
+                errors={'code': 'INTERNAL_ERROR', 'details': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class CompressPDFView(BaseConversionView):

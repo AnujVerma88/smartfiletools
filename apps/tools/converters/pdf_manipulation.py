@@ -241,13 +241,8 @@ class PDFCompressor(BaseConverter):
             reader = PdfReader(input_path)
             writer = PdfWriter()
             
-            # Add all pages
-            for page in reader.pages:
-                writer.add_page(page)
-            
-            # Compress content streams for each page
-            for page in writer.pages:
-                page.compress_content_streams()
+            # Clone writer settings to enable compression
+            writer.clone_document_from_reader(reader)
             
             # Write compressed PDF
             with open(output_path, 'wb') as output_file:

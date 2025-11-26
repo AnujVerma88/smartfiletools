@@ -1,0 +1,236 @@
+{% load static %}
+{% comment %}
+Split PDF Upload Interface Component
+Usage: {% include 'includes/file_upload_split.html' with tool=tool_object %}
+{% endcomment %}
+
+{% csrf_token %}
+
+<div class="file-upload-container split-pdf">
+    <!-- Info Banner -->
+    <div class="split-info" style="background: #EFF6FF; border-left: 4px solid #3B82F6; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: start; gap: 0.75rem;">
+            <i class="fas fa-info-circle" style="color: #3B82F6; font-size: 1.25rem; margin-top: 0.125rem;"></i>
+            <div>
+                <p style="font-weight: 600; color: #1E40AF; margin-bottom: 0.5rem; font-size: 0.875rem;">How to extract pages from your PDF:</p>
+                <ol style="margin: 0; padding-left: 1.25rem; color: #1E40AF; font-size: 0.875rem;">
+                    <li>Upload your PDF file</li>
+                    <li>View all pages and select the ones you want</li>
+                    <li>Click "Extract Selected Pages" to create a new PDF</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Zone -->
+    <div class="file-upload-zone" id="fileUploadZone" 
+         data-max-size="{{ tool.max_file_size_mb }}"
+         data-accepted-formats="{{ tool.supported_formats|join:',' }}"
+         aria-label="File upload area">
+        
+        <div class="file-upload-icon" aria-hidden="true">
+            <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+        
+        <div class="file-upload-text">
+            Drag & Drop Your PDF Here
+        </div>
+        
+        <div class="file-upload-hint">
+            or <strong>tap to browse</strong> from your device
+            <br>
+            Maximum file size: <strong>{{ tool.max_file_size_mb }}MB</strong>
+        </div>
+        
+        <button type="button" class="file-upload-browse-btn" id="browseFilesBtn">
+            <i class="fas fa-folder-open"></i>
+            <span>Browse Files</span>
+        </button>
+        
+        <input type="file" 
+               id="fileInput" 
+               class="file-input"
+               accept=".pdf,application/pdf"
+               aria-label="File input">
+    </div>
+    
+    <!-- Selected File Display -->
+    <div class="file-selected" id="fileSelected" style="display: none; margin-top: 1.5rem;">
+        <div class="file-selected-header" style="background: white; border: 2px solid #E5E7EB; border-radius: 8px; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
+            <div class="file-icon" style="color: #EF4444; font-size: 2rem;">
+                <i class="fas fa-file-pdf"></i>
+            </div>
+            <div class="file-details" style="flex: 1;">
+                <div class="file-name" id="fileName" style="font-weight: 600; color: #111827; margin-bottom: 0.25rem;"></div>
+                <div class="file-size" id="fileSize" style="color: #6B7280; font-size: 0.875rem;"></div>
+                <div class="file-pages" id="filePages" style="color: #6B7280; font-size: 0.875rem;"></div>
+            </div>
+            <button type="button" class="file-remove-btn" id="fileRemoveBtn" style="background: #FEE2E2; color: #EF4444; border: none; border-radius: 6px; padding: 0.5rem; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Page Selection -->
+    <div class="page-selection" id="pageSelection" style="display: none; margin-top: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.125rem; color: #111827; margin: 0;">
+                <i class="fas fa-file-pdf"></i> Select Pages to Extract
+            </h3>
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="button" id="selectAllBtn" style="padding: 0.5rem 1rem; background: white; color: #14B8A6; border: 2px solid #14B8A6; border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer;">
+                    <i class="fas fa-check-double"></i> Select All
+                </button>
+                <button type="button" id="deselectAllBtn" style="padding: 0.5rem 1rem; background: white; color: #6B7280; border: 2px solid #E5E7EB; border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer;">
+                    <i class="fas fa-times"></i> Deselect All
+                </button>
+            </div>
+        </div>
+        
+        <div style="background: #F9FAFB; border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem;">
+            <p style="color: #6B7280; font-size: 0.875rem; margin: 0;">
+                <i class="fas fa-mouse-pointer"></i> Click on pages to select/deselect them. Selected pages will be extracted into a new PDF.
+            </p>
+        </div>
+        
+        <div id="pageGrid" class="page-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; max-height: 600px; overflow-y: auto; padding: 1rem; background: white; border: 2px solid #E5E7EB; border-radius: 8px;">
+            <!-- Pages will be loaded here -->
+            <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #6B7280;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <p>Loading PDF pages...</p>
+            </div>
+        </div>
+        
+        <div id="selectionSummary" style="margin-top: 1rem; padding: 1rem; background: #F0FDFA; border-radius: 8px; border: 2px solid #14B8A6;">
+            <p style="color: #065F46; font-weight: 600; margin: 0;">
+                <i class="fas fa-check-circle"></i> <span id="selectedCount">0</span> page(s) selected
+            </p>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div class="file-upload-error" id="fileUploadError" style="display: none; background: #FEE2E2; border-left: 4px solid #EF4444; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-exclamation-triangle" style="color: #EF4444; font-size: 1.25rem;"></i>
+            <span id="fileUploadErrorText" style="color: #991B1B; font-size: 0.875rem;"></span>
+        </div>
+    </div>
+    
+    <!-- Extract Button -->
+    <button type="button" class="convert-btn" id="extractBtn" style="display: none; width: 100%; padding: 1rem; background: #14B8A6; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 1.5rem; transition: all 0.3s;">
+        <i class="fas fa-file-export convert-btn-icon"></i>
+        <span>Extract Selected Pages</span>
+    </button>
+    
+    <!-- Upload Progress -->
+    <div class="upload-progress-container" id="uploadProgressContainer" style="display: none; margin-top: 1.5rem;">
+        <div class="upload-progress-header" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span style="font-weight: 600; color: #111827;">Extracting pages...</span>
+            <span id="uploadPercentage" style="font-weight: 600; color: #14B8A6;">0%</span>
+        </div>
+        <div style="background: #E5E7EB; border-radius: 9999px; height: 8px; overflow: hidden;">
+            <div id="uploadProgressBar" style="background: linear-gradient(90deg, #14B8A6, #0F766E); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+        </div>
+    </div>
+    
+    <!-- Success Message -->
+    <div class="upload-status success" id="uploadStatus" style="display: none; background: #D1FAE5; border-left: 4px solid #10B981; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-check-circle" style="color: #10B981; font-size: 1.5rem;"></i>
+            <div style="flex: 1;">
+                <p style="font-weight: 600; color: #065F46; margin-bottom: 0.25rem;">Success!</p>
+                <p id="uploadStatusText" style="color: #047857; font-size: 0.875rem; margin: 0;"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include PDF.js library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+    // Set PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+</script>
+
+<!-- Include the split PDF JavaScript -->
+<script src="{% static 'js/file-upload-split.js' %}" defer></script>
+
+<style>
+.page-grid {
+    scrollbar-width: thin;
+    scrollbar-color: #14B8A6 #F3F4F6;
+}
+
+.page-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.page-grid::-webkit-scrollbar-track {
+    background: #F3F4F6;
+    border-radius: 4px;
+}
+
+.page-grid::-webkit-scrollbar-thumb {
+    background: #14B8A6;
+    border-radius: 4px;
+}
+
+.page-item {
+    position: relative;
+    border: 3px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.page-item:hover {
+    border-color: #14B8A6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.2);
+}
+
+.page-item.selected {
+    border-color: #14B8A6;
+    background: #F0FDFA;
+}
+
+.page-item.selected::after {
+    content: '\f00c';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: #14B8A6;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+.page-thumbnail {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.page-number {
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+@media (max-width: 768px) {
+    .page-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+    }
+}
+</style>
