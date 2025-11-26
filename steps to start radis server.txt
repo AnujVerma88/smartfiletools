@@ -1,0 +1,12 @@
+root@ip-172-31-22-128:/app/smartfiletools# sudo systemctl restart redis-server
+root@ip-172-31-22-128:/app/smartfiletools# sudo systemctl restart smartfiletools-celery
+root@ip-172-31-22-128:/app/smartfiletools# sudo systemctl restart smartfiletools-celerybeat
+
+
+root@ip-172-31-22-128:/app/smartfiletools# vi /etc/systemd/system/smartfiletools.service
+root@ip-172-31-22-128:/app/smartfiletools#
+root@ip-172-31-22-128:/app/smartfiletools#
+root@ip-172-31-22-128:/app/smartfiletools# sudo systemctl daemon-reload
+root@ip-172-31-22-128:/app/smartfiletools# sudo systemctl restart smartfiletools
+root@ip-172-31-22-128:/app/smartfiletools# sudo systemctl restart nginx
+root@ip-172-31-22-128:/app/smartfiletools#

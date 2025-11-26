@@ -400,7 +400,13 @@ class PPTXToPDFConverter(BaseConverter):
             ConversionError: If PowerPoint conversion fails
         """
         import os
-        import win32com.client
+        
+        try:
+            import win32com.client
+        except ImportError:
+            raise ConversionError(
+                "win32com is not available. This method only works on Windows with pywin32 installed."
+            )
         
         powerpoint = None
         presentation = None
@@ -562,6 +568,8 @@ class PPTXToPDFConverter(BaseConverter):
         Returns:
             dict: Conversion result with status and metadata
         """
+        from apps.tools.utils.platform_utils import get_platform, is_powerpoint_available
+        
         start_time = time.time()
         self.log_conversion_start(input_path, output_path)
         
@@ -569,39 +577,35 @@ class PPTXToPDFConverter(BaseConverter):
             # Validate input file
             self.validate_file(input_path)
             
-            # Load presentation
-            prs = Presentation(input_path)
+            # Determine conversion method based on platform
+            current_platform = get_platform()
             
-            # Create PDF
-            doc = SimpleDocTemplate(output_path, pagesize=letter)
-            elements = []
-            styles = getSampleStyleSheet()
-            
-            # Process each slide
-            for i, slide in enumerate(prs.slides, 1):
-                # Add slide number
-                elements.append(Paragraph(f"<b>Slide {i}</b>", styles['Heading1']))
-                elements.append(Spacer(1, 12))
-                
-                # Extract text from shapes
-                for shape in slide.shapes:
-                    if hasattr(shape, "text") and shape.text:
-                        elements.append(Paragraph(shape.text, styles['Normal']))
-                        elements.append(Spacer(1, 6))
-                
-                elements.append(Spacer(1, 20))
-            
-            # Build PDF
-            doc.build(elements)
+            if current_platform == 'windows' and is_powerpoint_available():
+                # On Windows with PowerPoint, use COM automation
+                try:
+                    self._convert_with_powerpoint(input_path, output_path)
+                except ConversionError as e:
+                    self.logger.warning(f"PowerPoint COM failed, trying LibreOffice: {str(e)}")
+                    self._convert_with_libreoffice(input_path, output_path)
+            else:
+                # On Linux/Mac or Windows without PowerPoint, use LibreOffice
+                self._convert_with_libreoffice(input_path, output_path)
             
             duration = time.time() - start_time
             self.log_conversion_success(input_path, output_path, duration)
+            
+            # Get slide count for metadata
+            try:
+                prs = Presentation(input_path)
+                slides_count = len(prs.slides)
+            except:
+                slides_count = None
             
             return {
                 'status': 'success',
                 'output_path': output_path,
                 'duration': duration,
-                'slides_processed': len(prs.slides),
+                'slides_processed': slides_count,
                 'input_info': self.get_file_info(input_path),
                 'output_info': self.get_file_info(output_path),
             }
