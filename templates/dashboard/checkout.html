@@ -28,7 +28,7 @@
                             <p style="color: #6B7280; font-size: 0.875rem;">Monthly subscription</p>
                         </div>
                         <div style="text-align: right;">
-                            <p style="font-size: 1.75rem; font-weight: 700; color: #14B8A6;">${{ plan_price }}</p>
+                            <p style="font-size: 1.75rem; font-weight: 700; color: #14B8A6;">₹{{ plan_price }}</p>
                             <p style="color: #6B7280; font-size: 0.875rem;">per month</p>
                         </div>
                     </div>
@@ -67,7 +67,7 @@
                 <div class="total" style="border-top: 2px solid #E5E7EB; padding-top: 1rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 1.25rem; font-weight: 600; color: #111827;">Total</span>
-                        <span style="font-size: 2rem; font-weight: 700; color: #14B8A6;">${{ plan_price }}</span>
+                        <span style="font-size: 2rem; font-weight: 700; color: #14B8A6;">₹{{ plan_price }}</span>
                     </div>
                     <p style="color: #6B7280; font-size: 0.875rem; margin-top: 0.5rem; text-align: right;">Billed monthly</p>
                 </div>
@@ -106,17 +106,17 @@
                                 <i class="fas fa-info-circle"></i> Payment Instructions:
                             </h4>
                             <ol style="margin: 0; padding-left: 1.5rem; color: #1E40AF; font-size: 0.875rem;">
-                                <li>Open your payment app (PayPal, Venmo, etc.)</li>
+                                <li>Open your payment app (UPI, PhonePe, Google Pay, etc.)</li>
                                 <li>Scan the QR code above</li>
-                                <li>Complete the payment of ${{ plan_price }}</li>
-                                <li>Send payment confirmation to: <strong>support@smarttoolpdf.com</strong></li>
+                                <li>Complete the payment of ₹{{ plan_price }}</li>
+                                <li>Send payment confirmation to: <strong>smarttoolpdf@gmail.com</strong></li>
                             </ol>
                         </div>
 
                         <!-- Alternative Payment Info -->
                         <div style="background: #F9FAFB; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
                             <p style="color: #6B7280; font-size: 0.875rem; margin-bottom: 0.5rem;">Or send payment directly to:</p>
-                            <p style="font-weight: 600; color: #111827; font-size: 1rem; margin-bottom: 0.25rem;">support@smarttoolpdf.com</p>
+                            <p style="font-weight: 600; color: #111827; font-size: 1rem; margin-bottom: 0.25rem;">smarttoolpdf@gmail.com</p>
                             <p style="color: #6B7280; font-size: 0.75rem;">Include your email: {{ user.email }}</p>
                         </div>
 
@@ -133,7 +133,7 @@
                         <h3 style="font-size: 1.25rem; color: #111827; margin-bottom: 0.5rem;">Card Payment Coming Soon</h3>
                         <p style="color: #6B7280; margin-bottom: 1.5rem;">We're working on integrating card payments. For now, please use QR code payment.</p>
                         <p style="color: #6B7280; font-size: 0.875rem;">
-                            Questions? Contact us at <a href="mailto:support@smarttoolpdf.com" style="color: #14B8A6; text-decoration: none; font-weight: 600;">support@smarttoolpdf.com</a>
+                            Questions? Contact us at <a href="mailto:smarttoolpdf@gmail.com" style="color: #14B8A6; text-decoration: none; font-weight: 600;">smarttoolpdf@gmail.com</a>
                         </p>
                     </div>
                 </div>
@@ -159,24 +159,29 @@
 </div>
 
 <!-- Include QR Code Library -->
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
 // Generate QR Code
 document.addEventListener('DOMContentLoaded', function() {
     const qrData = `Payment for SmartToolPDF Premium
-Amount: ${{ plan_price }} USD
+Amount: ₹{{ plan_price }} INR
 Email: {{ user.email }}
-Contact: support@smarttoolpdf.com`;
+Contact: smarttoolpdf@gmail.com`;
     
-    new QRCode(document.getElementById("qrcode"), {
-        text: qrData,
-        width: 200,
-        height: 200,
-        colorDark: "#111827",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    try {
+        new QRCode(document.getElementById("qrcode"), {
+            text: qrData,
+            width: 200,
+            height: 200,
+            colorDark: "#111827",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    } catch (error) {
+        console.error('QR Code generation error:', error);
+        document.getElementById("qrcode").innerHTML = '<p style="color: #6B7280;">QR Code generation failed. Please use the payment details below.</p>';
+    }
 });
 
 // Switch payment methods
@@ -208,7 +213,7 @@ function showPaymentMethod(method) {
 
 // Confirm payment
 function confirmPayment() {
-    if (confirm('Have you completed the payment and sent confirmation to support@smarttoolpdf.com?')) {
+    if (confirm('Have you completed the payment and sent confirmation to smarttoolpdf@gmail.com?')) {
         alert('Thank you! We will verify your payment and activate your premium account within 24 hours. You will receive a confirmation email at {{ user.email }}');
         window.location.href = '{% url "dashboard:dashboard" %}';
     }

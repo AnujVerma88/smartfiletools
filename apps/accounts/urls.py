@@ -27,4 +27,8 @@ urlpatterns = [
     # Profile
     path('profile/', views.UserProfileView.as_view(), name='profile'),
     path('profile/edit/', views.UserProfileEditView.as_view(), name='profile_edit'),
+    
+    # Email verification
+    path('verify-email/<str:token>/', views.verify_email_view, name='verify_email'),
+    path('resend-verification/', views.resend_verification_email, name='resend_verification'),
 ]

@@ -207,8 +207,8 @@ def checkout_view(request):
     context = {
         'user': request.user,
         'plan_name': 'Premium',
-        'plan_price': '9.99',
-        'plan_currency': 'USD',
+        'plan_price': '199',
+        'plan_currency': 'INR',
     }
     return render(request, 'dashboard/checkout.html', context)
 

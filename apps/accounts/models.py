@@ -23,6 +23,23 @@ class User(AbstractUser):
         help_text='User profile picture'
     )
     
+    # Email verification fields
+    email_verified = models.BooleanField(
+        default=False,
+        help_text='Email verification status'
+    )
+    email_verification_token = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text='Token for email verification'
+    )
+    email_verification_sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='When verification email was sent'
+    )
+    
     # Usage tracking fields
     daily_usage_count = models.IntegerField(
         default=0,

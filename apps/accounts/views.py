@@ -34,13 +34,59 @@ class UserRegistrationView(CreateView):
     success_url = reverse_lazy('accounts:login')
 
     def form_valid(self, form):
-        """Save user and log registration."""
+        """Save user and send verification email."""
         response = super().form_valid(form)
         user = form.instance
+        
+        # Generate verification token
+        import uuid
+        from django.utils import timezone
+        from django.core.mail import send_mail
+        from django.conf import settings
+        
+        verification_token = str(uuid.uuid4())
+        user.email_verification_token = verification_token
+        user.email_verification_sent_at = timezone.now()
+        user.save()
+        
+        # Send verification email
+        verification_url = self.request.build_absolute_uri(
+            reverse_lazy('accounts:verify_email', kwargs={'token': verification_token})
+        )
+        
+        subject = 'Verify your email - SmartToolPDF'
+        message = f"""
+Hello {user.username},
+
+Thank you for registering at SmartToolPDF!
+
+Please verify your email address by clicking the link below:
+{verification_url}
+
+This link will expire in 24 hours.
+
+If you didn't create this account, please ignore this email.
+
+Best regards,
+SmartToolPDF Team
+        """
+        
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'smarttoolpdf@gmail.com',
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+            logger.info(f"Verification email sent to: {user.email}")
+        except Exception as e:
+            logger.error(f"Failed to send verification email to {user.email}: {str(e)}")
+        
         logger.info(f"New user registered: {user.username} ({user.email})")
         messages.success(
             self.request,
-            'Registration successful! You can now log in.'
+            'Registration successful! Please check your email to verify your account.'
         )
         return response
 
@@ -221,3 +267,96 @@ class UserProfileEditView(LoginRequiredMixin, UpdateView):
             return self.render_to_response(
                 self.get_context_data(form=profile_form, user_form=user_form)
             )
+
+
+
+def verify_email_view(request, token):
+    """
+    Email verification view.
+    Verifies user email using the token sent via email.
+    """
+    from datetime import timedelta
+    from django.utils import timezone
+    
+    try:
+        user = User.objects.get(email_verification_token=token)
+        
+        # Check if token is expired (24 hours)
+        if user.email_verification_sent_at:
+            expiry_time = user.email_verification_sent_at + timedelta(hours=24)
+            if timezone.now() > expiry_time:
+                messages.error(request, 'Verification link has expired. Please request a new one.')
+                return redirect('accounts:login')
+        
+        # Verify email
+        user.email_verified = True
+        user.email_verification_token = None
+        user.save()
+        
+        logger.info(f"Email verified for user: {user.username} ({user.email})")
+        messages.success(request, 'Email verified successfully! You can now log in.')
+        return redirect('accounts:login')
+        
+    except User.DoesNotExist:
+        messages.error(request, 'Invalid verification link.')
+        return redirect('accounts:login')
+
+
+def resend_verification_email(request):
+    """
+    Resend verification email to user.
+    """
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please log in first.')
+        return redirect('accounts:login')
+    
+    user = request.user
+    
+    if user.email_verified:
+        messages.info(request, 'Your email is already verified.')
+        return redirect('dashboard:dashboard')
+    
+    # Generate new verification token
+    import uuid
+    from django.utils import timezone
+    from django.core.mail import send_mail
+    from django.conf import settings
+    
+    verification_token = str(uuid.uuid4())
+    user.email_verification_token = verification_token
+    user.email_verification_sent_at = timezone.now()
+    user.save()
+    
+    # Send verification email
+    verification_url = request.build_absolute_uri(
+        reverse_lazy('accounts:verify_email', kwargs={'token': verification_token})
+    )
+    
+    subject = 'Verify your email - SmartToolPDF'
+    message = f"""
+Hello {user.username},
+
+Please verify your email address by clicking the link below:
+{verification_url}
+
+This link will expire in 24 hours.
+
+Best regards,
+SmartToolPDF Team
+    """
+    
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'smarttoolpdf@gmail.com',
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+        logger.info(f"Verification email resent to: {user.email}")
+        messages.success(request, 'Verification email sent! Please check your inbox.')
+    except Exception as e:
+        logger.error(f"Failed to send verification email to {user.email}: {str(e)}")
+        messages.error(request, 'Failed to send verification email. Please try again later.')
+    
+    return redirect('dashboard:dashboard')
