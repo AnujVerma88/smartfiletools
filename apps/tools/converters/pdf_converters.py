@@ -388,6 +388,43 @@ class PPTXToPDFConverter(BaseConverter):
     MAX_FILE_SIZE_MB = 100
     OUTPUT_EXTENSION = 'pdf'
     
+    def _validate_pptx_file(self, input_path):
+        """
+        Validate that the PPTX file is not corrupted and can be opened.
+        
+        Args:
+            input_path: Path to PPTX file
+            
+        Raises:
+            ConversionError: If file is corrupted or cannot be opened
+        """
+        try:
+            # Try to open the PPTX file to verify it's not corrupted
+            prs = Presentation(input_path)
+            slide_count = len(prs.slides)
+            
+            if slide_count == 0:
+                raise ConversionError(
+                    "PPTX file contains no slides. "
+                    "Please ensure the file is a valid PowerPoint presentation."
+                )
+            
+            self.logger.info(f"PPTX validation passed: {slide_count} slides found")
+            return slide_count
+            
+        except Exception as e:
+            if isinstance(e, ConversionError):
+                raise
+            
+            error_msg = (
+                f"PPTX file appears to be corrupted or invalid: {str(e)}\n"
+                "Please ensure the file is a valid PowerPoint presentation (.pptx) "
+                "and try again. If the problem persists, try opening and re-saving "
+                "the file in PowerPoint or another presentation software."
+            )
+            self.logger.error(error_msg)
+            raise ConversionError(error_msg)
+    
     def _convert_with_powerpoint(self, input_path, output_path):
         """
         Convert PPTX to PDF using PowerPoint COM automation (Windows only).
@@ -547,19 +584,45 @@ class PPTXToPDFConverter(BaseConverter):
                 self.logger.debug(f"LibreOffice stderr: {result.stderr}")
                 
         except subprocess.TimeoutExpired as e:
-            error_msg = f"LibreOffice conversion timed out after {timeout} seconds"
+            # Clean up any partial output files
+            if os.path.exists(abs_output):
+                try:
+                    os.remove(abs_output)
+                    self.logger.info(f"Cleaned up partial output file after timeout: {abs_output}")
+                except Exception as cleanup_error:
+                    self.logger.warning(f"Could not clean up partial file: {cleanup_error}")
+            
+            error_msg = (
+                f"LibreOffice conversion timed out after {timeout} seconds. "
+                f"This may happen with very large or complex presentations. "
+                f"File size: {file_size_mb:.2f} MB. "
+                f"Try reducing the file size or complexity and try again."
+            )
             self.logger.error(error_msg)
             raise ConversionError(error_msg)
         except Exception as e:
             if isinstance(e, ConversionError):
                 raise
+            
+            # Clean up any partial output files on error
+            if os.path.exists(abs_output):
+                try:
+                    os.remove(abs_output)
+                    self.logger.info(f"Cleaned up partial output file after error: {abs_output}")
+                except Exception as cleanup_error:
+                    self.logger.warning(f"Could not clean up partial file: {cleanup_error}")
+            
             error_msg = f"LibreOffice conversion failed: {str(e)}"
             self.logger.error(error_msg)
             raise ConversionError(error_msg)
     
     def convert(self, input_path, output_path):
         """
-        Convert PPTX file to PDF format.
+        Convert PPTX file to PDF format using tiered approach.
+        
+        Conversion priority:
+        1. Windows: PowerPoint COM automation (if available) → LibreOffice (fallback)
+        2. Linux/Mac: LibreOffice only
         
         Args:
             input_path: Path to input PPTX file
@@ -567,44 +630,110 @@ class PPTXToPDFConverter(BaseConverter):
             
         Returns:
             dict: Conversion result with status and metadata
+            
+        Raises:
+            ConversionError: If conversion fails or no conversion tool is available
         """
-        from apps.tools.utils.platform_utils import get_platform, is_powerpoint_available
+        import os
+        from apps.tools.utils.platform_utils import (
+            get_platform, 
+            is_powerpoint_available,
+            is_libreoffice_available,
+            get_available_conversion_method
+        )
         
         start_time = time.time()
         self.log_conversion_start(input_path, output_path)
         
         try:
-            # Validate input file
+            # Validate input file (size, extension, MIME type)
             self.validate_file(input_path)
             
-            # Determine conversion method based on platform
+            # Validate PPTX file is not corrupted
+            try:
+                slide_count_validated = self._validate_pptx_file(input_path)
+            except ConversionError as e:
+                # Re-raise with more context
+                raise ConversionError(
+                    f"PPTX file validation failed: {str(e)}\n"
+                    f"File: {input_path}"
+                )
+            
+            # Detect platform and available tools
             current_platform = get_platform()
+            available_method = get_available_conversion_method()
+            
+            self.logger.info(f"Platform detected: {current_platform}")
+            self.logger.info(f"Available conversion method: {available_method}")
+            
+            # Check if any conversion method is available
+            if available_method == 'none':
+                raise ConversionError(
+                    "No conversion tool available. "
+                    "Please install Microsoft PowerPoint (Windows) or LibreOffice (all platforms).\n"
+                    "Installation instructions:\n"
+                    "  - Ubuntu/Debian: sudo apt-get install libreoffice\n"
+                    "  - RHEL/CentOS: sudo yum install libreoffice\n"
+                    "  - Windows: Download LibreOffice from https://www.libreoffice.org/download/\n"
+                    "  - Mac: Download LibreOffice from https://www.libreoffice.org/download/"
+                )
+            
+            # Perform conversion using tiered approach
+            conversion_method_used = None
             
             if current_platform == 'windows' and is_powerpoint_available():
-                # On Windows with PowerPoint, use COM automation
+                # Try PowerPoint COM first on Windows
+                self.logger.info("Attempting conversion with PowerPoint COM automation")
                 try:
                     self._convert_with_powerpoint(input_path, output_path)
+                    conversion_method_used = 'powerpoint'
+                    self.logger.info("Conversion completed using PowerPoint COM automation")
                 except ConversionError as e:
-                    self.logger.warning(f"PowerPoint COM failed, trying LibreOffice: {str(e)}")
-                    self._convert_with_libreoffice(input_path, output_path)
+                    self.logger.warning(f"PowerPoint COM failed: {str(e)}")
+                    
+                    # Fall back to LibreOffice if available
+                    if is_libreoffice_available():
+                        self.logger.info("Falling back to LibreOffice conversion")
+                        self._convert_with_libreoffice(input_path, output_path)
+                        conversion_method_used = 'libreoffice'
+                        self.logger.info("Conversion completed using LibreOffice (fallback)")
+                    else:
+                        raise ConversionError(
+                            "PowerPoint COM automation failed and LibreOffice is not available. "
+                            f"Original error: {str(e)}"
+                        )
             else:
-                # On Linux/Mac or Windows without PowerPoint, use LibreOffice
+                # Use LibreOffice on Linux/Mac or Windows without PowerPoint
+                self.logger.info(f"Attempting conversion with LibreOffice on {current_platform}")
                 self._convert_with_libreoffice(input_path, output_path)
+                conversion_method_used = 'libreoffice'
+                self.logger.info("Conversion completed using LibreOffice")
+            
+            # Validate output PDF file exists and is valid
+            if not os.path.exists(output_path):
+                raise ConversionError(
+                    f"Conversion completed but output file not found: {output_path}"
+                )
+            
+            output_size = os.path.getsize(output_path)
+            if output_size == 0:
+                raise ConversionError(
+                    f"Conversion produced an empty PDF file: {output_path}"
+                )
+            
+            self.logger.info(f"Output PDF validated: {output_path} ({output_size} bytes)")
             
             duration = time.time() - start_time
             self.log_conversion_success(input_path, output_path, duration)
             
-            # Get slide count for metadata
-            try:
-                prs = Presentation(input_path)
-                slides_count = len(prs.slides)
-            except:
-                slides_count = None
+            # Use the validated slide count
+            slides_count = slide_count_validated
             
             return {
                 'status': 'success',
                 'output_path': output_path,
                 'duration': duration,
+                'conversion_method': conversion_method_used,
                 'slides_processed': slides_count,
                 'input_info': self.get_file_info(input_path),
                 'output_info': self.get_file_info(output_path),

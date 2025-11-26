@@ -17,13 +17,17 @@ redis
 # File conversion libraries
 pdf2docx
 docx2pdf
-PyPDF2
+PyPDF2  # PDF validation and inspection
 Pillow
 moviepy
 python-pptx
 openpyxl
 pdfplumber
 reportlab
+
+# Windows-only dependencies (for PowerPoint COM automation)
+# Install on Windows only: pip install pywin32
+# pywin32  # Uncomment on Windows for PowerPoint COM automation
 
 # HTTP and webhook utilities
 requests
@@ -37,12 +41,61 @@ django-redis
 unoconv
 
 # Testing libraries
-hypothesis
+hypothesis  # Property-based testing
 
-#sudo apt update
+# ==============================================================================
+# EXTERNAL SYSTEM REQUIREMENTS (Not Python packages)
+# ==============================================================================
+#
+# LibreOffice (Required for DOCX/PPTX to PDF conversion on Linux/Mac)
+# ------------------------------------------------------------------------------
+# Ubuntu/Debian:
+#   sudo apt update
+#   sudo apt install -y libreoffice libreoffice-writer libreoffice-calc libreoffice-impress
+#   sudo apt install -y libreoffice-core libreoffice-common
+#
+# RHEL/CentOS:
+#   sudo yum install -y libreoffice
+#
+# Mac:
+#   brew install libreoffice
+#   # Or download from: https://www.libreoffice.org/download/
+#
+# Windows:
+#   Download and install from: https://www.libreoffice.org/download/
+#   # Or use Microsoft PowerPoint (preferred on Windows)
+#
+# Verify installation:
+#   libreoffice --version
+#   libreoffice --headless --convert-to pdf test.docx
+#
+# ------------------------------------------------------------------------------
+# System Utilities (Required for LibreOffice on minimal Linux installations)
+# ------------------------------------------------------------------------------
+# Ubuntu/Debian:
+#   sudo apt install -y coreutils grep sed findutils
+#
+# ------------------------------------------------------------------------------
+# MIME Type Detection (Required for file validation)
+# ------------------------------------------------------------------------------
+# Ubuntu/Debian:
+#   sudo apt install -y libmagic1
+#
+# RHEL/CentOS:
+#   sudo yum install -y file-libs
+#
+# ------------------------------------------------------------------------------
+# Production Server (Gunicorn)
+# ------------------------------------------------------------------------------
+# Install separately for production:
+#   pip install gunicorn
+#
+# ==============================================================================
+
 #sudo apt install -y libmagic1
 #pip install -r requirements.txt
 #sudo apt install -y libreoffice
 #sudo apt install -y libreoffice libmagic1 unoconv 
 
-#pip install gunicorn
+
+

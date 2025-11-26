@@ -245,8 +245,7 @@ class PDFCompressor(BaseConverter):
             for page in reader.pages:
                 writer.add_page(page)
             
-            # Compress
-            writer.compress_identical_objects(remove_identicals=True)
+            # Compress content streams for each page
             for page in writer.pages:
                 page.compress_content_streams()
             
