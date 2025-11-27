@@ -104,3 +104,112 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+
+
+
+class PaymentConfirmation(models.Model):
+    """
+    Track payment confirmations from users.
+    Stores details when users indicate they have completed payment.
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending Verification'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+        ('refunded', 'Refunded'),
+    ]
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='payment_confirmations',
+        help_text='User who submitted the payment confirmation'
+    )
+    plan_name = models.CharField(
+        max_length=100,
+        default='Premium',
+        help_text='Name of the plan purchased'
+    )
+    plan_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text='Price of the plan'
+    )
+    currency = models.CharField(
+        max_length=3,
+        default='INR',
+        help_text='Currency code (e.g., INR, USD)'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        help_text='Verification status of the payment'
+    )
+    
+    # Timestamps
+    submitted_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text='When the user submitted the confirmation'
+    )
+    verified_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='When the payment was verified by admin'
+    )
+    
+    # Admin notes
+    admin_notes = models.TextField(
+        blank=True,
+        help_text='Internal notes from admin about this payment'
+    )
+    verified_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='verified_payments',
+        help_text='Admin user who verified this payment'
+    )
+    
+    # Additional tracking
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        help_text='IP address of the user when submitting'
+    )
+    user_agent = models.TextField(
+        blank=True,
+        help_text='Browser user agent string'
+    )
+    
+    class Meta:
+        verbose_name = 'Payment Confirmation'
+        verbose_name_plural = 'Payment Confirmations'
+        ordering = ['-submitted_at']
+        indexes = [
+            models.Index(fields=['user', 'status']),
+            models.Index(fields=['submitted_at']),
+            models.Index(fields=['status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.plan_name} - {self.status}"
+    
+    def mark_as_verified(self, admin_user=None):
+        """Mark payment as verified and activate premium for user."""
+        self.status = 'verified'
+        self.verified_at = timezone.now()
+        self.verified_by = admin_user
+        self.save()
+        
+        # Activate premium for user
+        self.user.is_premium = True
+        self.user.save()
+    
+    def mark_as_rejected(self, reason=''):
+        """Mark payment as rejected."""
+        self.status = 'rejected'
+        if reason:
+            self.admin_notes = reason
+        self.save()

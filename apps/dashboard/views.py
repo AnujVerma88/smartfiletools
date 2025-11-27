@@ -221,6 +221,7 @@ def confirm_payment_view(request):
     from django.http import JsonResponse
     from django.core.mail import send_mail
     from django.conf import settings
+    from apps.accounts.models import PaymentConfirmation
     
     if request.method != 'POST':
         return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
@@ -230,10 +231,43 @@ def confirm_payment_view(request):
     plan_price = request.POST.get('plan_price', '199')
     
     try:
+        # Get client IP address
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip_address = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip_address = request.META.get('REMOTE_ADDR')
+        
+        # Get user agent
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+        
+        # Create payment confirmation record
+        payment_confirmation = PaymentConfirmation.objects.create(
+            user=user,
+            plan_name=plan_name,
+            plan_price=plan_price,
+            currency='INR',
+            status='pending',
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+        
+        logger.info(f"Payment confirmation created: ID {payment_confirmation.id} for user {user.email}")
+        
+    except Exception as e:
+        logger.error(f"Error creating payment confirmation: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while saving your confirmation. Please contact support.'
+        }, status=500)
+    
+    try:
         # Send email to admin
         admin_subject = f'Payment Confirmation Received - {user.email}'
         admin_message = f"""
 Payment Confirmation Received
+
+Confirmation ID: {payment_confirmation.id}
 
 User Details:
 - Email: {user.email}
@@ -245,6 +279,9 @@ Plan Details:
 - Price: ₹{plan_price}
 
 The user has indicated they have completed the payment. Please verify and activate their premium account.
+
+To verify this payment, go to:
+Django Admin > Accounts > Payment Confirmations > ID #{payment_confirmation.id}
 
 User's email for confirmation: {user.email}
 """
