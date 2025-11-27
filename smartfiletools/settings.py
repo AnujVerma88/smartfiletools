@@ -30,9 +30,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',  # Required by django-allauth
+    # Django Allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    # Third-party apps
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    # Local apps
     'apps.accounts',
     'apps.tools',
     'apps.ads',
@@ -50,6 +58,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Django Allauth middleware (must be after AuthenticationMiddleware)
+    'allauth.account.middleware.AccountMiddleware',
+    # Custom middleware
     'apps.common.middleware.RequestLoggingMiddleware',
     # API Authentication and Usage Logging
     'apps.api.middleware.APIKeyAuthenticationMiddleware',
@@ -92,6 +103,51 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = 'accounts.User'
+
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    # Django default backend (username/password)
+    'django.contrib.auth.backends.ModelBackend',
+    # Allauth backend for social authentication
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Django Allauth Configuration
+SITE_ID = 1  # Required by django-allauth
+
+# Allauth settings (using new configuration format)
+ACCOUNT_LOGIN_METHODS = {'email'}  # Login with email only
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']  # Required signup fields
+ACCOUNT_EMAIL_VERIFICATION = 'optional'  # Don't require email verification for social accounts
+LOGIN_REDIRECT_URL = '/dashboard/'
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+
+# Social Account Configuration
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'  # Trust email from social providers
+SOCIALACCOUNT_QUERY_EMAIL = True
+
+# Google OAuth Provider Configuration
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'APP': {
+            'client_id': config('GOOGLE_OAUTH_CLIENT_ID', default=''),
+            'secret': config('GOOGLE_OAUTH_CLIENT_SECRET', default=''),
+            'key': ''  # Leave empty for OAuth 2.0
+        },
+        'VERIFIED_EMAIL': True,  # Trust email verification from Google
+    }
+}
+
+# Custom Account Adapter
+SOCIALACCOUNT_ADAPTER = 'apps.accounts.adapters.SmartToolPDFSocialAccountAdapter'
 
 # Static and Media Files
 STATIC_URL = '/static/'
@@ -395,3 +451,5 @@ SITE_URL = config('SITE_URL', default='https://smarttoolpdf.com')
 
 # Usage Limits
 DAILY_CONVERSION_LIMIT_FREE = config('DAILY_CONVERSION_LIMIT_FREE', default=100, cast=int)
+
+

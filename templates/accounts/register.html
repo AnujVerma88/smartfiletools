@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load socialaccount %}
 
 {% block title %}Sign Up - SmartToolPDF{% endblock %}
 
@@ -19,6 +20,16 @@
                     {% if form.non_field_errors %}
                     <div class="alert alert-danger">
                         {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
                     </div>
                     {% endif %}
 
@@ -78,14 +89,10 @@
                 </div>
 
                 <div class="social-login-buttons">
-                    <button type="button" class="btn-social btn-google">
+                    <a href="{% provider_login_url 'google' %}" class="btn-social btn-google">
                         <i class="fab fa-google"></i>
                         Sign up with Google
-                    </button>
-                    <button type="button" class="btn-social btn-facebook">
-                        <i class="fab fa-facebook"></i>
-                        Sign up with Facebook
-                    </button>
+                    </a>
                 </div>
 
                 <div class="auth-footer">

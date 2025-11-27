@@ -158,6 +158,57 @@
     </div>
 </div>
 
+<!-- CSRF Token -->
+{% csrf_token %}
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; padding: 2rem; max-width: 500px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); animation: slideIn 0.3s ease;">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div style="width: 64px; height: 64px; background: #EFF6FF; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <i class="fas fa-question-circle" style="font-size: 2rem; color: #3B82F6;"></i>
+            </div>
+            <h3 style="font-size: 1.5rem; color: #111827; margin-bottom: 0.5rem; font-weight: 700;">Confirm Payment Completion</h3>
+            <p style="color: #6B7280; font-size: 1rem; line-height: 1.6;">
+                Have you completed the payment and sent confirmation to <strong style="color: #14B8A6;">smarttoolpdf@gmail.com</strong>?
+            </p>
+        </div>
+        
+        <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <p style="color: #92400E; font-size: 0.875rem; margin: 0;">
+                <i class="fas fa-info-circle"></i> Please ensure you have sent the payment confirmation email before proceeding.
+            </p>
+        </div>
+        
+        <div style="display: flex; gap: 1rem;">
+            <button onclick="closeModal()" style="flex: 1; padding: 0.75rem 1.5rem; background: white; color: #6B7280; border: 2px solid #E5E7EB; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button id="submitConfirmBtn" onclick="submitPaymentConfirmation()" style="flex: 1; padding: 0.75rem 1.5rem; background: #14B8A6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                <i class="fas fa-check"></i> Yes, I've Paid
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; padding: 2rem; max-width: 500px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); animation: slideIn 0.3s ease;">
+        <div style="text-align: center;">
+            <div style="width: 80px; height: 80px; background: #D1FAE5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                <i class="fas fa-check-circle" style="font-size: 3rem; color: #10B981;"></i>
+            </div>
+            <h3 style="font-size: 1.5rem; color: #111827; margin-bottom: 1rem; font-weight: 700;">Payment Confirmation Received!</h3>
+            <p id="successMessage" style="color: #6B7280; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                Thank you! We will verify your payment and activate your premium account within 24 hours.
+            </p>
+            <button onclick="closeSuccessModal()" style="width: 100%; padding: 1rem 2rem; background: #14B8A6; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s;">
+                <i class="fas fa-arrow-right"></i> Go to Dashboard
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Include QR Code Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
@@ -213,10 +264,77 @@ function showPaymentMethod(method) {
 
 // Confirm payment
 function confirmPayment() {
-    if (confirm('Have you completed the payment and sent confirmation to smarttoolpdf@gmail.com?')) {
-        alert('Thank you! We will verify your payment and activate your premium account within 24 hours. You will receive a confirmation email at {{ user.email }}');
-        window.location.href = '{% url "dashboard:dashboard" %}';
-    }
+    showConfirmModal();
+}
+
+// Show confirmation modal
+function showConfirmModal() {
+    const modal = document.getElementById('confirmModal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+// Close modal
+function closeModal() {
+    const modal = document.getElementById('confirmModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Submit payment confirmation
+function submitPaymentConfirmation() {
+    const submitBtn = document.getElementById('submitConfirmBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    // Disable button and show loading
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    
+    // Get CSRF token
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Send AJAX request
+    fetch('{% url "dashboard:confirm_payment" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrftoken
+        },
+        body: new URLSearchParams({
+            'plan_name': '{{ plan_name }}',
+            'plan_price': '{{ plan_price }}'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success modal
+            closeModal();
+            showSuccessModal(data.message);
+        } else {
+            alert('Error: ' + data.message);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again or contact support.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+}
+
+// Show success modal
+function showSuccessModal(message) {
+    const successModal = document.getElementById('successModal');
+    document.getElementById('successMessage').textContent = message;
+    successModal.style.display = 'flex';
+}
+
+// Close success modal and redirect
+function closeSuccessModal() {
+    window.location.href = '{% url "dashboard:dashboard" %}';
 }
 
 // Hover effects
@@ -235,6 +353,17 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 </script>
 
 <style>
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media (max-width: 768px) {
     .checkout-content {
         grid-template-columns: 1fr !important;
@@ -248,6 +377,17 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 button:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#confirmModal button:hover,
+#successModal button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+#confirmModal button:active,
+#successModal button:active {
+    transform: translateY(0);
 }
 </style>
 {% endblock %}

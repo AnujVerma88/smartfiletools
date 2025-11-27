@@ -214,6 +214,92 @@ def checkout_view(request):
 
 
 @login_required
+def confirm_payment_view(request):
+    """
+    Handle payment confirmation and send notification emails.
+    """
+    from django.http import JsonResponse
+    from django.core.mail import send_mail
+    from django.conf import settings
+    
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
+    
+    user = request.user
+    plan_name = request.POST.get('plan_name', 'Premium')
+    plan_price = request.POST.get('plan_price', '199')
+    
+    try:
+        # Send email to admin
+        admin_subject = f'Payment Confirmation Received - {user.email}'
+        admin_message = f"""
+Payment Confirmation Received
+
+User Details:
+- Email: {user.email}
+- Name: {user.get_full_name() or user.username}
+- User ID: {user.id}
+
+Plan Details:
+- Plan: {plan_name}
+- Price: ₹{plan_price}
+
+The user has indicated they have completed the payment. Please verify and activate their premium account.
+
+User's email for confirmation: {user.email}
+"""
+        
+        send_mail(
+            subject=admin_subject,
+            message=admin_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.EMAIL_HOST_USER],
+            fail_silently=False,
+        )
+        
+        # Send confirmation email to user
+        user_subject = 'Payment Confirmation Received - SmartToolPDF'
+        user_message = f"""
+Dear {user.get_full_name() or user.username},
+
+Thank you for your payment confirmation!
+
+We have received your notification that you have completed the payment for the {plan_name} plan (₹{plan_price}).
+
+Our team will verify your payment and activate your premium account within 24 hours. You will receive a confirmation email once your account has been upgraded.
+
+If you have any questions, please don't hesitate to contact us at {settings.EMAIL_HOST_USER}.
+
+Thank you for choosing SmartToolPDF!
+
+Best regards,
+The SmartToolPDF Team
+"""
+        
+        send_mail(
+            subject=user_subject,
+            message=user_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+        
+        logger.info(f"Payment confirmation emails sent for user {user.email}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Thank you! We will verify your payment and activate your premium account within 24 hours. You will receive a confirmation email at {user.email}'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error sending payment confirmation emails: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while processing your confirmation. Please contact support.'
+        }, status=500)
+
+
+@login_required
 def billing_view(request):
     """
     Billing and subscription management page.

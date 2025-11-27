@@ -40,6 +40,9 @@ django-redis
 #sudo apt-get install libreoffice
 unoconv
 
+# Authentication
+django-allauth  # Social authentication (Google OAuth)
+
 # Testing libraries
 hypothesis  # Property-based testing
 

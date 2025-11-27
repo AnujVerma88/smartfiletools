@@ -4559,17 +4559,26 @@ p {
     cursor: pointer;
     transition: var(--transition);
     min-height: 48px;
+    text-decoration: none;
 }
 
 .btn-social:hover {
     border-color: var(--primary-color);
     background: var(--gray-50);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-social:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-social i {
     font-size: 1.25rem;
 }
 
+/* Google OAuth Button */
 .btn-google {
     border-color: #DB4437;
     color: #DB4437;
@@ -4577,15 +4586,12 @@ p {
 
 .btn-google:hover {
     background: rgba(219, 68, 55, 0.1);
+    border-color: #C33D2E;
+    color: #C33D2E;
 }
 
-.btn-facebook {
-    border-color: #4267B2;
-    color: #4267B2;
-}
-
-.btn-facebook:hover {
-    background: rgba(66, 103, 178, 0.1);
+.btn-google:active {
+    background: rgba(219, 68, 55, 0.15);
 }
 
 /* Responsive Auth Pages */

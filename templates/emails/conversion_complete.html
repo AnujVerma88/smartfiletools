@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Your Conversion is Complete</title>
+    <style>
+        /* Reset styles */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+        
+        /* Base styles */
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100% !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        
+        /* Container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        
+        /* Header */
+        .email-header {
+            background: linear-gradient(135deg, #14B8A6 0%, #0F766E 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .email-header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        /* Content */
+        .email-content {
+            padding: 40px 30px;
+            color: #333333;
+            line-height: 1.6;
+        }
+        
+        .email-content p {
+            margin: 0 0 16px 0;
+            font-size: 16px;
+        }
+        
+        .greeting {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+        
+        /* Conversion details box */
+        .conversion-details {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .detail-value {
+            color: #1f2937;
+            font-size: 14px;
+            text-align: right;
+        }
+        
+        /* Download button */
+        .download-button-container {
+            text-align: center;
+            margin: 32px 0;
+        }
+        
+        .download-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #14B8A6 0%, #0F766E 100%);
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 16px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(20, 184, 166, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .download-button:hover {
+            box-shadow: 0 6px 8px rgba(20, 184, 166, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        /* Footer */
+        .email-footer {
+            background-color: #f9fafb;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .email-footer p {
+            margin: 8px 0;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .email-footer a {
+            color: #14B8A6;
+            text-decoration: none;
+        }
+        
+        .email-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Icon */
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .email-content {
+                padding: 30px 20px;
+            }
+            
+            .email-header h1 {
+                font-size: 24px;
+            }
+            
+            .download-button {
+                padding: 14px 30px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f4f4f4;">
+        <tr>
+            <td style="padding: 20px 0;">
+                <table role="presentation" class="email-container" cellspacing="0" cellpadding="0" border="0" width="600" align="center">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td class="email-header">
+                            <div class="success-icon">✓</div>
+                            <h1>Conversion Complete!</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td class="email-content">
+                            <p class="greeting">Hi {{ user_name }},</p>
+                            
+                            <p>Great news! Your file conversion has been completed successfully.</p>
+                            
+                            <!-- Conversion Details -->
+                            <div class="conversion-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">Conversion Type:</span>
+                                    <span class="detail-value">{{ conversion_type }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Original File:</span>
+                                    <span class="detail-value">{{ original_filename }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Completed At:</span>
+                                    <span class="detail-value">{{ completed_at }}</span>
+                                </div>
+                                {% if file_size_before %}
+                                <div class="detail-row">
+                                    <span class="detail-label">Original Size:</span>
+                                    <span class="detail-value">{{ file_size_before }}</span>
+                                </div>
+                                {% endif %}
+                                {% if file_size_after %}
+                                <div class="detail-row">
+                                    <span class="detail-label">Converted Size:</span>
+                                    <span class="detail-value">{{ file_size_after }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Download Button -->
+                            <div class="download-button-container">
+                                <a href="{{ download_url }}" class="download-button">Download Your File</a>
+                            </div>
+                            
+                            <p style="font-size: 14px; color: #6b7280;">
+                                Your converted file will be available for download for the next 24 hours. 
+                                After that, it will be automatically deleted from our servers for your privacy and security.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td class="email-footer">
+                            <p><strong>SmartToolPDF</strong></p>
+                            <p>Fast, secure, and free file conversion tools</p>
+                            <p>
+                                <a href="{{ site_url }}">Visit Website</a> | 
+                                <a href="{{ site_url }}/help">Help Center</a> | 
+                                <a href="{{ site_url }}/contact">Contact Us</a>
+                            </p>
+                            <p style="margin-top: 20px; font-size: 12px;">
+                                This email was sent because you used our file conversion service. 
+                                If you didn't request this conversion, please ignore this email.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

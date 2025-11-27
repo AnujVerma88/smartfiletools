@@ -1,0 +1,34 @@
+CONVERSION COMPLETE!
+==========================================
+
+Hi {{ user_name }},
+
+Great news! Your file conversion has been completed successfully.
+
+CONVERSION DETAILS
+------------------
+Conversion Type: {{ conversion_type }}
+Original File: {{ original_filename }}
+Completed At: {{ completed_at }}
+{% if file_size_before %}Original Size: {{ file_size_before }}{% endif %}
+{% if file_size_after %}Converted Size: {{ file_size_after }}{% endif %}
+
+DOWNLOAD YOUR FILE
+------------------
+Click the link below to download your converted file:
+{{ download_url }}
+
+Your converted file will be available for download for the next 24 hours. 
+After that, it will be automatically deleted from our servers for your 
+privacy and security.
+
+------------------------------------------
+SmartToolPDF
+Fast, secure, and free file conversion tools
+
+Visit Website: {{ site_url }}
+Help Center: {{ site_url }}/help
+Contact Us: {{ site_url }}/contact
+
+This email was sent because you used our file conversion service. 
+If you didn't request this conversion, please ignore this email.

@@ -27,9 +27,10 @@ urlpatterns = [
     # Admin interface
     path('admin/', admin.site.urls),
     
-    # Main application URLs
+    # Main application URLs (custom accounts URLs must come before allauth)
     path('', include('apps.dashboard.urls')),  # Home, dashboard, static pages
-    path('accounts/', include('apps.accounts.urls')),  # Authentication, profile
+    path('accounts/', include('apps.accounts.urls')),  # Authentication, profile (custom views)
+    path('accounts/', include('allauth.urls')),  # OAuth callbacks and social auth
     path('tools/', include('apps.tools.urls')),  # File conversion tools
     path('ads/', include('apps.ads.urls')),  # Advertisement tracking
     path('api/', include('apps.api.urls')),  # RESTful API (v1)
