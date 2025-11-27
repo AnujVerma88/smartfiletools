@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 
 class SiteTheme(models.Model):
@@ -139,3 +140,173 @@ class ConversionLog(models.Model):
 
     def __str__(self):
         return f"{self.action} - {self.conversion.tool_type} ({self.created_at})"
+
+
+
+class SiteStatistics(models.Model):
+    """
+    Model to store site-wide statistics displayed on homepage and about page.
+    Uses hybrid approach: base number + actual counts from database.
+    Only one record should exist (singleton pattern).
+    """
+    base_files_converted = models.IntegerField(
+        default=12590,
+        help_text='Base number for files converted (actual count will be added to this)'
+    )
+    base_happy_users = models.IntegerField(
+        default=950,
+        help_text='Base number for happy users (actual count will be added to this)'
+    )
+    base_tools_available = models.IntegerField(
+        default=25,
+        help_text='Base number for tools available (actual count will be added to this)'
+    )
+    uptime_percentage = models.CharField(
+        max_length=20,
+        default='99.9%',
+        help_text='Display value for uptime (e.g., "99.9%" or "100%")'
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Site Statistics'
+        verbose_name_plural = 'Site Statistics'
+    
+    def __str__(self):
+        return f"Site Statistics (Updated: {self.updated_at.strftime('%Y-%m-%d %H:%M')})"
+    
+    def save(self, *args, **kwargs):
+        """Ensure only one instance exists (singleton pattern)."""
+        self.pk = 1
+        super().save(*args, **kwargs)
+    
+    def delete(self, *args, **kwargs):
+        """Prevent deletion of the singleton instance."""
+        pass
+    
+    def get_total_files_converted(self):
+        """Get total files converted (base + actual)."""
+        from apps.tools.models import ConversionHistory
+        actual_count = ConversionHistory.objects.filter(status='completed').count()
+        total = self.base_files_converted + actual_count
+        return self._format_number(total)
+    
+    def get_total_happy_users(self):
+        """Get total happy users (base + actual)."""
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        actual_count = User.objects.count()
+        total = self.base_happy_users + actual_count
+        return self._format_number(total)
+    
+    def get_total_tools_available(self):
+        """Get total tools available (base + actual)."""
+        from apps.tools.models import Tool
+        actual_count = Tool.objects.filter(is_active=True).count()
+        total = self.base_tools_available + actual_count
+        return str(total)
+    
+    def _format_number(self, num):
+        """Format number with K, M suffixes and + sign."""
+        if num >= 1000000:
+            return f"{num / 1000000:.1f}M+".replace('.0M', 'M')
+        elif num >= 1000:
+            return f"{num / 1000:.1f}K+".replace('.0K', 'K')
+        else:
+            return f"{num}+"
+    
+    @classmethod
+    def get_stats(cls):
+        """Get or create the singleton statistics instance."""
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+class EmailNotification(models.Model):
+    """
+    Model to track all email notifications sent by the system.
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('sent', 'Sent'),
+        ('failed', 'Failed'),
+    ]
+    
+    EMAIL_TYPE_CHOICES = [
+        ('conversion_complete', 'Conversion Complete'),
+    ]
+    
+    conversion = models.ForeignKey(
+        'tools.ConversionHistory',
+        on_delete=models.CASCADE,
+        related_name='email_notifications',
+        help_text='Related conversion history record'
+    )
+    recipient_email = models.EmailField(
+        help_text='Email address where notification was sent'
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='email_notifications',
+        help_text='User who received the email'
+    )
+    email_type = models.CharField(
+        max_length=50,
+        choices=EMAIL_TYPE_CHOICES,
+        default='conversion_complete',
+        help_text='Type of email notification'
+    )
+    subject = models.CharField(
+        max_length=255,
+        help_text='Email subject line'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        help_text='Status: sent, failed, or pending'
+    )
+    error_message = models.TextField(
+        null=True,
+        blank=True,
+        help_text='Error details if sending failed'
+    )
+    sent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text='Timestamp when email was successfully sent'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text='When record was created'
+    )
+    
+    class Meta:
+        verbose_name = 'Email Notification'
+        verbose_name_plural = 'Email Notifications'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['conversion']),
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['status']),
+            models.Index(fields=['email_type']),
+            models.Index(fields=['-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.email_type} - {self.recipient_email} ({self.status})"
+    
+    def mark_as_sent(self):
+        """Update status to 'sent' and set sent_at timestamp."""
+        self.status = 'sent'
+        self.sent_at = timezone.now()
+        self.save(update_fields=['status', 'sent_at'])
+    
+    def mark_as_failed(self, error_message):
+        """Update status to 'failed' and store error message."""
+        self.status = 'failed'
+        self.error_message = error_message
+        self.save(update_fields=['status', 'error_message'])

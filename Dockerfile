@@ -30,9 +30,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     # Office document conversion
     libreoffice \
+    libreoffice-writer \
+    libreoffice-calc \
+    libreoffice-impress \
     # MIME type detection
     libmagic1 \
-    # Utilities
+    # Core utilities required by LibreOffice
+    coreutils \
+    grep \
+    sed \
+    findutils \
+    # Additional utilities
     curl \
     && rm -rf /var/lib/apt/lists/*
 

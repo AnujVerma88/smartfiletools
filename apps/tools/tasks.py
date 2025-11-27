@@ -118,6 +118,35 @@ def process_conversion(self, conversion_id):
             f"{conversion.processing_time:.2f}s"
         )
         
+        # Send email notification for authenticated users
+        try:
+            from apps.tools.utils.email_notifications import send_conversion_complete_email
+            
+            if conversion.user:
+                logger.info(f"Attempting to send email notification for conversion {conversion_id}")
+                email_notification = send_conversion_complete_email(conversion_id)
+                
+                if email_notification and email_notification.status == 'sent':
+                    logger.info(
+                        f"Email notification sent successfully to {conversion.user.email} "
+                        f"for conversion {conversion_id}"
+                    )
+                elif email_notification and email_notification.status == 'failed':
+                    logger.error(
+                        f"Email notification failed for conversion {conversion_id}: "
+                        f"{email_notification.error_message}"
+                    )
+                else:
+                    logger.info(f"Email notification skipped for conversion {conversion_id}")
+            else:
+                logger.debug(f"Skipping email notification for anonymous conversion {conversion_id}")
+        except Exception as e:
+            # Email failures should not affect conversion status
+            logger.error(
+                f"Error sending email notification for conversion {conversion_id}: {str(e)}",
+                exc_info=True
+            )
+        
         return {
             'status': 'success',
             'conversion_id': conversion_id,
