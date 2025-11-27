@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Already Verified - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <!-- Info Icon -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
+                <i class="fas fa-info-circle text-blue-600 text-5xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Already Verified</h1>
+            <p class="text-gray-600">This payment has already been processed</p>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Payment Information</h2>
+            <div class="space-y-2">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">User:</span>
+                    <span class="font-medium text-gray-900">{{ user.email }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Plan:</span>
+                    <span class="font-medium text-gray-900">{{ payment_confirmation.plan_name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Amount:</span>
+                    <span class="font-medium text-gray-900">₹{{ payment_confirmation.total_amount }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Status:</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <i class="fas fa-check-circle mr-1"></i> Verified
+                    </span>
+                </div>
+                {% if payment_confirmation.verified_at %}
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Verified On:</span>
+                    <span class="font-medium text-gray-900">{{ payment_confirmation.verified_at|date:"d M Y, g:i a" }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Info Message -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <p class="text-gray-700 text-center">
+                <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                This payment was already verified and the premium account has been activated.
+            </p>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-4 justify-center">
+            <a href="/admin/accounts/paymentconfirmation/{{ payment_confirmation.id }}/change/" 
+               class="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                <i class="fas fa-eye mr-2"></i>
+                View Confirmation
+            </a>
+            <a href="/admin/accounts/user/{{ user.id }}/change/" 
+               class="inline-flex items-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
+                <i class="fas fa-user mr-2"></i>
+                View User Profile
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

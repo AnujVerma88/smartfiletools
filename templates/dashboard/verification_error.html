@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verification Error - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <!-- Error Icon -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
+                <i class="fas fa-exclamation-circle text-red-600 text-5xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Verification Failed</h1>
+            <p class="text-gray-600">Unable to verify payment</p>
+        </div>
+
+        <!-- Error Details -->
+        <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-red-900 mb-2">{{ error_message }}</h2>
+            <p class="text-red-700">{{ error_details }}</p>
+        </div>
+
+        <!-- What to do next -->
+        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-3">What to do next:</h2>
+            <ul class="space-y-2 text-gray-700">
+                <li class="flex items-start">
+                    <i class="fas fa-check-circle text-teal-600 mt-1 mr-2"></i>
+                    <span>Check if the verification link is complete and hasn't been modified</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check-circle text-teal-600 mt-1 mr-2"></i>
+                    <span>Verify the payment manually through Django Admin</span>
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-check-circle text-teal-600 mt-1 mr-2"></i>
+                    <span>Contact the user if you need more information</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-4 justify-center">
+            <a href="/admin/accounts/paymentconfirmation/" 
+               class="inline-flex items-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                <i class="fas fa-list mr-2"></i>
+                View All Confirmations
+            </a>
+            <a href="/admin/" 
+               class="inline-flex items-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
+                <i class="fas fa-home mr-2"></i>
+                Go to Admin
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

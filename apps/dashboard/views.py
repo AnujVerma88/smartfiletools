@@ -204,10 +204,22 @@ def checkout_view(request):
     """
     Checkout page for premium subscription.
     """
+    from decimal import Decimal
+    
+    plan_price = Decimal('199.00')
+    tax_rate = Decimal('18.00')
+    
+    # Calculate tax and total
+    tax_amount = (plan_price * tax_rate / 100).quantize(Decimal('0.01'))
+    total_amount = (plan_price + tax_amount).quantize(Decimal('0.01'))
+    
     context = {
         'user': request.user,
         'plan_name': 'Premium',
-        'plan_price': '199',
+        'plan_price': plan_price,
+        'tax_rate': tax_rate,
+        'tax_amount': tax_amount,
+        'total_amount': total_amount,
         'plan_currency': 'INR',
     }
     return render(request, 'dashboard/checkout.html', context)
@@ -229,6 +241,9 @@ def confirm_payment_view(request):
     user = request.user
     plan_name = request.POST.get('plan_name', 'Premium')
     plan_price = request.POST.get('plan_price', '199')
+    tax_rate = request.POST.get('tax_rate', '18')
+    tax_amount = request.POST.get('tax_amount', '35.82')
+    total_amount = request.POST.get('total_amount', '234.82')
     
     try:
         # Get client IP address
@@ -246,6 +261,9 @@ def confirm_payment_view(request):
             user=user,
             plan_name=plan_name,
             plan_price=plan_price,
+            tax_rate=tax_rate,
+            tax_amount=tax_amount,
+            total_amount=total_amount,
             currency='INR',
             status='pending',
             ip_address=ip_address,
@@ -262,6 +280,14 @@ def confirm_payment_view(request):
         }, status=500)
     
     try:
+        # Generate verification URL using reverse
+        from django.urls import reverse
+        verification_path = reverse('dashboard:verify_payment', kwargs={
+            'confirmation_id': payment_confirmation.id,
+            'token': payment_confirmation.verification_token
+        })
+        verification_url = request.build_absolute_uri(verification_path)
+        
         # Send email to admin
         admin_subject = f'Payment Confirmation Received - {user.email}'
         admin_message = f"""
@@ -280,7 +306,10 @@ Plan Details:
 
 The user has indicated they have completed the payment. Please verify and activate their premium account.
 
-To verify this payment, go to:
+🔗 ONE-CLICK VERIFICATION:
+Click here to verify and activate: {verification_url}
+
+Or manually verify in Django Admin:
 Django Admin > Accounts > Payment Confirmations > ID #{payment_confirmation.id}
 
 User's email for confirmation: {user.email}
@@ -341,6 +370,8 @@ def billing_view(request):
     """
     Billing and subscription management page.
     """
+    from apps.accounts.models import Invoice, PaymentConfirmation
+    
     user = request.user
     
     # Get usage statistics
@@ -356,11 +387,29 @@ def billing_view(request):
         created_at__gte=start_of_month
     ).count()
     
+    # Get invoices
+    invoices = Invoice.objects.filter(user=user).order_by('-payment_date')
+    
+    # Get payment confirmations
+    payment_confirmations = PaymentConfirmation.objects.filter(
+        user=user
+    ).order_by('-submitted_at')
+    
+    # Get active subscription details (most recent verified payment)
+    active_payment = payment_confirmations.filter(status='verified').first()
+    
+    # Get most recent invoice
+    latest_invoice = invoices.first()
+    
     context = {
         'user': user,
         'total_conversions': total_conversions,
         'completed_conversions': completed_conversions,
         'conversions_this_month': conversions_this_month,
+        'invoices': invoices,
+        'payment_confirmations': payment_confirmations,
+        'active_payment': active_payment,
+        'latest_invoice': latest_invoice,
     }
     
     return render(request, 'dashboard/billing.html', context)
@@ -413,3 +462,101 @@ def security_view(request):
     Security page view.
     """
     return render(request, 'security.html')
+
+
+@login_required
+def download_invoice_view(request, invoice_id):
+    """
+    Download invoice as PDF.
+    """
+    from django.http import HttpResponse, Http404
+    from apps.accounts.models import Invoice
+    from apps.accounts.invoice_generator import generate_invoice_pdf
+    
+    try:
+        invoice = Invoice.objects.get(id=invoice_id, user=request.user)
+    except Invoice.DoesNotExist:
+        raise Http404("Invoice not found")
+    
+    # Generate PDF
+    pdf_buffer = generate_invoice_pdf(invoice)
+    
+    # Create response
+    response = HttpResponse(pdf_buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Invoice-{invoice.invoice_number}.pdf"'
+    
+    return response
+
+
+def verify_payment_view(request, confirmation_id, token):
+    """
+    One-click payment verification from email link.
+    Verifies the payment confirmation and activates premium account.
+    """
+    from django.shortcuts import render, redirect
+    from django.contrib import messages
+    from apps.accounts.models import PaymentConfirmation
+    
+    try:
+        payment_confirmation = PaymentConfirmation.objects.get(id=confirmation_id)
+    except PaymentConfirmation.DoesNotExist:
+        messages.error(request, 'Payment confirmation not found.')
+        return render(request, 'dashboard/verification_error.html', {
+            'error_message': 'Payment confirmation not found.',
+            'error_details': 'The payment confirmation ID is invalid or does not exist.'
+        })
+    
+    # Check if already verified
+    if payment_confirmation.status == 'verified':
+        messages.info(request, 'This payment has already been verified.')
+        return render(request, 'dashboard/verification_already_done.html', {
+            'payment_confirmation': payment_confirmation,
+            'user': payment_confirmation.user,
+        })
+    
+    # Validate token
+    if payment_confirmation.verification_token != token:
+        messages.error(request, 'Invalid verification token.')
+        return render(request, 'dashboard/verification_error.html', {
+            'error_message': 'Invalid verification token.',
+            'error_details': 'The verification link is invalid or has been tampered with.'
+        })
+    
+    # Check if token is expired or used
+    if not payment_confirmation.is_token_valid():
+        if payment_confirmation.token_used:
+            error_details = 'This verification link has already been used.'
+        else:
+            error_details = 'This verification link has expired (valid for 7 days).'
+        
+        messages.error(request, 'Verification link is no longer valid.')
+        return render(request, 'dashboard/verification_error.html', {
+            'error_message': 'Verification link is no longer valid.',
+            'error_details': error_details
+        })
+    
+    # Mark token as used
+    payment_confirmation.token_used = True
+    payment_confirmation.save()
+    
+    # Verify payment and create invoice
+    try:
+        invoice = payment_confirmation.mark_as_verified(admin_user=request.user if request.user.is_authenticated else None)
+        
+        logger.info(f"Payment verified via email link: Confirmation ID {confirmation_id}, User {payment_confirmation.user.email}")
+        
+        messages.success(request, f'Payment verified successfully! Premium account activated for {payment_confirmation.user.email}')
+        
+        return render(request, 'dashboard/verification_success.html', {
+            'payment_confirmation': payment_confirmation,
+            'invoice': invoice,
+            'user': payment_confirmation.user,
+        })
+        
+    except Exception as e:
+        logger.error(f"Error verifying payment {confirmation_id}: {str(e)}")
+        messages.error(request, 'An error occurred while verifying the payment.')
+        return render(request, 'dashboard/verification_error.html', {
+            'error_message': 'An error occurred while verifying the payment.',
+            'error_details': str(e)
+        })

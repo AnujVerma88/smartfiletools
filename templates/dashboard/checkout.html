@@ -64,12 +64,23 @@
                     </ul>
                 </div>
 
-                <div class="total" style="border-top: 2px solid #E5E7EB; padding-top: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 1.25rem; font-weight: 600; color: #111827;">Total</span>
-                        <span style="font-size: 2rem; font-weight: 700; color: #14B8A6;">₹{{ plan_price }}</span>
+                <div class="pricing-breakdown" style="border-top: 2px solid #E5E7EB; padding-top: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span style="color: #6B7280; font-size: 1rem;">Plan Price</span>
+                        <span style="color: #111827; font-size: 1rem; font-weight: 600;">₹{{ plan_price }}</span>
                     </div>
-                    <p style="color: #6B7280; font-size: 0.875rem; margin-top: 0.5rem; text-align: right;">Billed monthly</p>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span style="color: #6B7280; font-size: 1rem;">GST ({{ tax_rate }}%)</span>
+                        <span style="color: #111827; font-size: 1rem; font-weight: 600;">₹{{ tax_amount }}</span>
+                    </div>
+                    <div style="border-top: 2px solid #E5E7EB; padding-top: 0.75rem; margin-top: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 1.25rem; font-weight: 600; color: #111827;">Total Amount</span>
+                            <span style="font-size: 2rem; font-weight: 700; color: #14B8A6;">₹{{ total_amount }}</span>
+                        </div>
+                        <p style="color: #6B7280; font-size: 0.875rem; margin-top: 0.5rem; text-align: right;">Includes {{ tax_rate }}% GST | Billed monthly</p>
+                        <p style="color: #6B7280; font-size: 0.75rem; margin-top: 0.25rem; text-align: right;">GSTN: 29AFQPV0371Q1ZD</p>
+                    </div>
                 </div>
             </div>
 
@@ -108,7 +119,7 @@
                             <ol style="margin: 0; padding-left: 1.5rem; color: #1E40AF; font-size: 0.875rem;">
                                 <li>Open your payment app (UPI, PhonePe, Google Pay, etc.)</li>
                                 <li>Scan the QR code above</li>
-                                <li>Complete the payment of ₹{{ plan_price }}</li>
+                                <li>Complete the payment of <strong>₹{{ total_amount }}</strong> (including {{ tax_rate }}% GST)</li>
                                 <li>Send payment confirmation to: <strong>smarttoolpdf@gmail.com</strong></li>
                             </ol>
                         </div>
@@ -302,7 +313,10 @@ function submitPaymentConfirmation() {
         },
         body: new URLSearchParams({
             'plan_name': '{{ plan_name }}',
-            'plan_price': '{{ plan_price }}'
+            'plan_price': '{{ plan_price }}',
+            'tax_rate': '{{ tax_rate }}',
+            'tax_amount': '{{ tax_amount }}',
+            'total_amount': '{{ total_amount }}'
         })
     })
     .then(response => response.json())
