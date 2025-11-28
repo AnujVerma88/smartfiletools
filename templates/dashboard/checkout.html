@@ -103,13 +103,23 @@
                 <!-- QR Code Payment -->
                 <div id="qr-payment" class="payment-method">
                     <div style="text-align: center;">
-                        <h3 style="font-size: 1.125rem; color: #111827; margin-bottom: 1rem;">Scan to Pay</h3>
-                        <p style="color: #6B7280; font-size: 0.875rem; margin-bottom: 1.5rem;">Scan this QR code with your payment app</p>
+                        <h3 style="font-size: 1.125rem; color: #111827; margin-bottom: 1rem;">
+                            <i class="fas fa-qrcode"></i> Scan to Pay with UPI
+                        </h3>
+                        <p style="color: #6B7280; font-size: 0.875rem; margin-bottom: 1.5rem;">
+                            Scan this QR code with any UPI app to pay <strong style="color: #14B8A6;">₹{{ total_amount }}</strong>
+                        </p>
                         
                         <!-- QR Code Container -->
-                        <div style="background: #F9FAFB; border: 2px solid #E5E7EB; border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; display: inline-block;">
+                        <div style="background: #F9FAFB; border: 2px dashed #14B8A6; border-radius: 12px; padding: 2rem; margin-bottom: 1rem; display: inline-block; position: relative;">
                             <div id="qrcode" style="display: flex; justify-content: center; align-items: center;"></div>
+                            <div style="position: absolute; top: -12px; right: -12px; background: #10B981; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <i class="fas fa-check" style="font-size: 0.875rem;"></i>
+                            </div>
                         </div>
+                        <p style="color: #10B981; font-size: 0.75rem; margin-bottom: 1.5rem;">
+                            <i class="fas fa-shield-check"></i> Scannable QR Code
+                        </p>
 
                         <!-- Payment Instructions -->
                         <div style="background: #EFF6FF; border-left: 4px solid #3B82F6; padding: 1rem; border-radius: 8px; text-align: left; margin-bottom: 1.5rem;">
@@ -117,18 +127,25 @@
                                 <i class="fas fa-info-circle"></i> Payment Instructions:
                             </h4>
                             <ol style="margin: 0; padding-left: 1.5rem; color: #1E40AF; font-size: 0.875rem;">
-                                <li>Open your payment app (UPI, PhonePe, Google Pay, etc.)</li>
+                                <li>Open any UPI app (Google Pay, PhonePe, Paytm, BHIM, etc.)</li>
                                 <li>Scan the QR code above</li>
-                                <li>Complete the payment of <strong>₹{{ total_amount }}</strong> (including {{ tax_rate }}% GST)</li>
-                                <li>Send payment confirmation to: <strong>smarttoolpdf@gmail.com</strong></li>
+                                <li>Verify the amount: <strong>₹{{ total_amount }}</strong> (including {{ tax_rate }}% GST)</li>
+                                <li>Complete the payment</li>
+                                <li>Click "I've Completed Payment" button below</li>
                             </ol>
                         </div>
 
-                        <!-- Alternative Payment Info -->
-                        <div style="background: #F9FAFB; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                            <p style="color: #6B7280; font-size: 0.875rem; margin-bottom: 0.5rem;">Or send payment directly to:</p>
-                            <p style="font-weight: 600; color: #111827; font-size: 1rem; margin-bottom: 0.25rem;">smarttoolpdf@gmail.com</p>
-                            <p style="color: #6B7280; font-size: 0.75rem;">Include your email: {{ user.email }}</p>
+                        <!-- UPI ID Display -->
+                        <div style="background: #F9FAFB; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; border: 2px solid #E5E7EB;">
+                            <p style="color: #6B7280; font-size: 0.875rem; margin-bottom: 0.5rem; text-align: center;">
+                                <i class="fas fa-mobile-alt"></i> Or pay manually using UPI ID:
+                            </p>
+                            <p style="font-weight: 700; color: #111827; font-size: 1.125rem; margin-bottom: 0.5rem; text-align: center; font-family: monospace;">
+                                vanuj022-1@okhdfcbank
+                            </p>
+                            <p style="color: #6B7280; font-size: 0.75rem; text-align: center;">
+                                Amount: <strong>₹{{ total_amount }}</strong> | Reference: {{ user.email }}
+                            </p>
                         </div>
 
                         <button onclick="confirmPayment()" style="width: 100%; padding: 1rem; background: #14B8A6; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s;">
@@ -224,25 +241,71 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
-// Generate QR Code
+// Generate QR Code with UPI URL
 document.addEventListener('DOMContentLoaded', function() {
-    const qrData = `Payment for SmartToolPDF Premium
-Amount: ₹{{ plan_price }} INR
-Email: {{ user.email }}
-Contact: smarttoolpdf@gmail.com`;
+    // UPI payment details
+    const merchantUpiId = 'vanuj022-1@okhdfcbank';
+    const merchantName = 'SmartToolPDF';
+    const amount = '{{ total_amount }}';
+    const currency = 'INR';
+    const planName = '{{ plan_name }}';
+    const userEmail = '{{ user.email }}';
+    
+    // Validate amount format before generating UPI URL
+    const amountFloat = parseFloat(amount);
+    if (isNaN(amountFloat) || amountFloat <= 0) {
+        console.error('Invalid amount format:', amount);
+        document.getElementById("qrcode").innerHTML = 
+            '<div style="padding: 1rem; text-align: center;">' +
+            '<i class="fas fa-exclamation-triangle" style="color: #F59E0B; font-size: 2rem; margin-bottom: 0.5rem;"></i>' +
+            '<p style="color: #6B7280; font-size: 0.875rem;">QR Code generation failed.</p>' +
+            '<p style="color: #6B7280; font-size: 0.875rem; margin-top: 0.5rem;">Please use the UPI ID below for manual payment.</p>' +
+            '</div>';
+        return;
+    }
+    
+    // Format amount to exactly 2 decimal places
+    const formattedAmount = amountFloat.toFixed(2);
+    
+    // Create transaction note with plan name and user email
+    const transactionNote = `${planName} Plan - ${userEmail}`;
+    
+    // Build UPI deep linking URL following NPCI specification
+    const upiUrl = `upi://pay?pa=${encodeURIComponent(merchantUpiId)}&pn=${encodeURIComponent(merchantName)}&am=${formattedAmount}&cu=${currency}&tn=${encodeURIComponent(transactionNote)}`;
+    
+    // Log UPI URL for debugging (without sensitive data in production)
+    console.log('Generating QR code for UPI payment');
+    console.log('Amount:', formattedAmount, currency);
     
     try {
+        // Check if QRCode library is loaded
+        if (typeof QRCode === 'undefined') {
+            throw new Error('QRCode library not loaded');
+        }
+        
         new QRCode(document.getElementById("qrcode"), {
-            text: qrData,
+            text: upiUrl,
             width: 200,
             height: 200,
             colorDark: "#111827",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.H
         });
+        
+        console.log('QR code generated successfully');
     } catch (error) {
         console.error('QR Code generation error:', error);
-        document.getElementById("qrcode").innerHTML = '<p style="color: #6B7280;">QR Code generation failed. Please use the payment details below.</p>';
+        console.error('Error details:', error.message);
+        
+        // Display fallback message with better formatting
+        document.getElementById("qrcode").innerHTML = 
+            '<div style="padding: 1rem; text-align: center;">' +
+            '<i class="fas fa-exclamation-triangle" style="color: #F59E0B; font-size: 2rem; margin-bottom: 0.5rem;"></i>' +
+            '<p style="color: #6B7280; font-size: 0.875rem; font-weight: 600;">QR Code generation failed</p>' +
+            '<p style="color: #6B7280; font-size: 0.75rem; margin-top: 0.5rem;">Please use the UPI ID below for manual payment</p>' +
+            '<p style="color: #14B8A6; font-size: 0.875rem; font-weight: 700; margin-top: 1rem; font-family: monospace;">vanuj022-1@okhdfcbank</p>' +
+            '<p style="color: #6B7280; font-size: 0.75rem; margin-top: 0.5rem;">Amount: ₹' + formattedAmount + '</p>' +
+            '</div>';
     }
 });
 
