@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Continue with Google - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <div class="google-icon">
+                        <i class="fab fa-google"></i>
+                    </div>
+                    <h1>Continue with Google</h1>
+                    <p>You're about to sign in using your Google account</p>
+                </div>
+
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="info-box">
+                    <h3>
+                        <i class="fas fa-info-circle"></i> What happens next?
+                    </h3>
+                    <ul>
+                        <li>You'll be redirected to Google's secure login page</li>
+                        <li>Sign in with your Google account</li>
+                        <li>Grant SmartToolPDF permission to access your email and profile</li>
+                        <li>You'll be automatically logged in to SmartToolPDF</li>
+                    </ul>
+                </div>
+
+                <form method="post" class="oauth-form">
+                    {% csrf_token %}
+                    
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fab fa-google"></i> Continue to Google
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>
+                        <a href="{% url 'accounts:login' %}" class="back-link">
+                            <i class="fas fa-arrow-left"></i> Back to login
+                        </a>
+                    </p>
+                    <p class="terms-text">
+                        By continuing, you agree to our 
+                        <a href="{% url 'dashboard:terms' %}" target="_blank">Terms of Service</a> 
+                        and <a href="{% url 'dashboard:privacy' %}" target="_blank">Privacy Policy</a>
+                    </p>
+                </div>
+            </div>
+
+            <div class="auth-benefits">
+                <h2>Secure & Private</h2>
+                <div class="benefit-list">
+                    <div class="benefit-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <h3>Your Privacy Protected</h3>
+                            <p>We only request access to your basic profile information (name and email)</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-lock"></i>
+                        <div>
+                            <h3>Limited Access</h3>
+                            <p>We never access your Google Drive, Gmail, or other Google services</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h3>Secure Connection</h3>
+                            <p>All data is encrypted and transmitted over secure HTTPS connections</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-user-shield"></i>
+                        <div>
+                            <h3>No Data Sharing</h3>
+                            <p>Your information is never shared with third parties</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-page {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    padding: 60px 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.auth-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.google-icon {
+    font-size: 64px;
+    color: #4285f4;
+    margin-bottom: 20px;
+}
+
+.auth-header h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    color: #333;
+    font-weight: 600;
+}
+
+.auth-header p {
+    color: #666;
+    font-size: 16px;
+    margin: 0;
+}
+
+.info-box {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 25px 0;
+}
+
+.info-box h3 {
+    margin-top: 0;
+    font-size: 16px;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.info-box h3 i {
+    color: #4285f4;
+    margin-right: 8px;
+}
+
+.info-box ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #666;
+    line-height: 1.8;
+}
+
+.info-box li {
+    margin-bottom: 8px;
+}
+
+.oauth-form {
+    margin-top: 30px;
+}
+
+.btn-primary {
+    background: #4285f4;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: #357ae8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+}
+
+.btn-block {
+    width: 100%;
+    display: block;
+}
+
+.auth-footer {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.back-link {
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: #4285f4;
+}
+
+.terms-text {
+    font-size: 12px;
+    color: #999;
+    margin-top: 15px;
+}
+
+.terms-text a {
+    color: #4285f4;
+    text-decoration: none;
+}
+
+.terms-text a:hover {
+    text-decoration: underline;
+}
+
+.auth-benefits {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.auth-benefits h2 {
+    font-size: 24px;
+    margin-bottom: 30px;
+    color: #333;
+    font-weight: 600;
+}
+
+.benefit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.benefit-item {
+    display: flex;
+    gap: 15px;
+    align-items: start;
+}
+
+.benefit-item i {
+    font-size: 24px;
+    color: #34a853;
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+
+.benefit-item h3 {
+    font-size: 16px;
+    margin: 0 0 5px 0;
+    color: #333;
+    font-weight: 600;
+}
+
+.benefit-item p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.messages {
+    margin: 20px 0;
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.alert-error, .alert-danger {
+    background: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+}
+
+.alert-info {
+    background: #e7f3ff;
+    color: #0066cc;
+    border: 1px solid #b3d9ff;
+}
+
+.alert-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+@media (max-width: 992px) {
+    .auth-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .auth-benefits {
+        order: 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-page {
+        padding: 30px 0;
+    }
+    
+    .auth-card,
+    .auth-benefits {
+        padding: 30px 20px;
+    }
+    
+    .auth-header h1 {
+        font-size: 24px;
+    }
+    
+    .google-icon {
+        font-size: 48px;
+    }
+    
+    .auth-benefits h2 {
+        font-size: 20px;
+    }
+}
+</style>
+{% endblock %}

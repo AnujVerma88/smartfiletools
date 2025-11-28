@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Authentication Error - SmartToolPDF{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container">
+        <div class="auth-container" style="max-width: 600px; margin: 0 auto;">
+            <div class="auth-card">
+                <div class="auth-header" style="text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 20px; color: #ea4335;">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <h1>Authentication Error</h1>
+                    <p>We couldn't complete the Google sign-in process</p>
+                </div>
+
+                {% if messages %}
+                <div class="messages" style="margin: 20px 0;">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #ffc107;">
+                    <h3 style="margin-top: 0; font-size: 16px; color: #856404;">
+                        <i class="fas fa-info-circle"></i> What you can do:
+                    </h3>
+                    <ul style="margin: 10px 0; padding-left: 20px; color: #856404;">
+                        <li>Try signing in with Google again</li>
+                        <li>Use your email and password instead</li>
+                        <li>Clear your browser cookies and try again</li>
+                        <li>Contact support if the problem persists</li>
+                    </ul>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 30px;">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-primary" style="flex: 1; text-align: center; padding: 15px; text-decoration: none;">
+                        <i class="fas fa-sign-in-alt"></i> Back to Login
+                    </a>
+                    <a href="{% url 'dashboard:home' %}" class="btn btn-secondary" style="flex: 1; text-align: center; padding: 15px; text-decoration: none; background: #6c757d; color: white; border-radius: 8px;">
+                        <i class="fas fa-home"></i> Go Home
+                    </a>
+                </div>
+
+                <div class="auth-footer" style="margin-top: 30px; text-align: center;">
+                    <p style="font-size: 14px; color: #666;">
+                        Need help? <a href="{% url 'dashboard:contact' %}">Contact Support</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-page {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+    padding: 40px 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.auth-container {
+    width: 100%;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.auth-header h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.auth-header p {
+    color: #666;
+    font-size: 16px;
+    margin: 0;
+}
+
+.btn-primary {
+    background: #4285f4;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #357ae8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.alert-error, .alert-danger {
+    background: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+}
+
+.alert-info {
+    background: #e7f3ff;
+    color: #0066cc;
+    border: 1px solid #b3d9ff;
+}
+
+@media (max-width: 768px) {
+    .auth-card {
+        padding: 30px 20px;
+    }
+    
+    .auth-header h1 {
+        font-size: 24px;
+    }
+    
+    div[style*="display: flex"] {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
