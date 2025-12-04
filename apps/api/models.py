@@ -247,7 +247,7 @@ class APIKey(models.Model):
         help_text='Key name (e.g., "Production Key", "Mobile App Key")'
     )
     key = models.CharField(
-        max_length=64,
+        max_length=255,  # Increased to accommodate hashed password
         unique=True,
         db_index=True,
         help_text='API key (hashed)'
@@ -257,7 +257,7 @@ class APIKey(models.Model):
         help_text='First 8 characters for display'
     )
     secret = models.CharField(
-        max_length=128,
+        max_length=255,  # Increased to accommodate hashed password
         help_text='API secret (hashed)'
     )
     environment = models.CharField(

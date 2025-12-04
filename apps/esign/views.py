@@ -10,6 +10,24 @@ from django.contrib import messages
 from .models import SignSession
 
 
+def get_client_ip(request):
+    """
+    Get client IP address from request, handling proxy headers.
+    Returns None if IP cannot be determined.
+    """
+    # Check for X-Forwarded-For header (common in production behind proxy/load balancer)
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        # X-Forwarded-For can contain multiple IPs, take the first one
+        ip = x_forwarded_for.split(',')[0].strip()
+        return ip if ip else None
+    
+    # Fallback to REMOTE_ADDR
+    ip = request.META.get('REMOTE_ADDR')
+    return ip if ip else None
+
+
+
 @login_required
 def upload_pdf(request):
     """Upload PDF for signing"""
@@ -64,7 +82,7 @@ def upload_pdf(request):
                 session=session,
                 event_type='session_created',
                 payload={'filename': uploaded_file.name},
-                ip_address=request.META.get('REMOTE_ADDR'),
+                ip_address=get_client_ip(request),
                 user_agent=request.META.get('HTTP_USER_AGENT', '')
             )
             
@@ -147,7 +165,7 @@ def verify_otp(request, session_id):
         AuditEvent.objects.create(
             session=session,
             event_type='otp_verified',
-            ip_address=request.META.get('REMOTE_ADDR'),
+            ip_address=get_client_ip(request),
             user_agent=request.META.get('HTTP_USER_AGENT', '')
         )
         
@@ -158,7 +176,7 @@ def verify_otp(request, session_id):
             session=session,
             event_type='otp_failed',
             payload={'input': '***'},
-            ip_address=request.META.get('REMOTE_ADDR'),
+            ip_address=get_client_ip(request),
             user_agent=request.META.get('HTTP_USER_AGENT', '')
         )
         messages.error(request, 'Invalid or expired verification code.')
@@ -292,7 +310,7 @@ def save_signature(request, session_id):
             signature_image=signature_file,
             signer_name=request.user.get_full_name() or request.user.username,
             signer_email=request.user.email,
-            ip_address=request.META.get('REMOTE_ADDR'),
+            ip_address=get_client_ip(request),
             user_agent=request.META.get('HTTP_USER_AGENT', '')
         )
         

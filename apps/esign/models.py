@@ -58,13 +58,19 @@ class SignSession(models.Model):
     signed_file_size = models.BigIntegerField(default=0, help_text='Signed file size in bytes')
     
     # Hashes for integrity
-    original_pdf_hash = models.CharField(max_length=64, help_text='SHA-256 hash of original')
+    original_pdf_hash = models.CharField(
+        max_length=500, 
+        blank=True,
+        default='',
+        help_text='SHA-256 hash of original'
+    )
     signed_pdf_hash = models.CharField(
-        max_length=64,
+        max_length=500,
         null=True,
         blank=True,
         help_text='SHA-256 hash of signed PDF'
     )
+
     
     # Session state
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='created')
@@ -255,7 +261,7 @@ class Signature(models.Model):
     signer_location = models.CharField(max_length=255, blank=True)
     
     # Audit trail
-    ip_address = models.GenericIPAddressField()
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField()
     
     # Font info for typed signatures
