@@ -1,6 +1,10 @@
 """
 File conversion implementations.
 """
+import logging
+
+logger = logging.getLogger('apps.tools')
+
 from .pdf_converters import (
     PDFToDocxConverter,
     DocxToPDFConverter,
@@ -25,9 +29,21 @@ try:
         VideoCompressor,
     )
     VIDEO_CONVERTERS_AVAILABLE = True
+    logger.info("[OK] VideoCompressor imported successfully")
 except ImportError as e:
-    print(f"⚠ Video converters not available: {e}")
     VIDEO_CONVERTERS_AVAILABLE = False
+    logger.error(f"[FAIL] VideoCompressor import failed: {e}")
+    logger.error("  Video compression will be unavailable.")
+    logger.error("  To enable video compression, install MoviePy:")
+    logger.error("    pip install moviepy")
+    logger.error("  MoviePy also requires ffmpeg to be installed on your system:")
+    logger.error("    - Windows: Download from https://ffmpeg.org/")
+    logger.error("    - Linux: sudo apt-get install ffmpeg")
+    logger.error("    - Mac: brew install ffmpeg")
+except Exception as e:
+    VIDEO_CONVERTERS_AVAILABLE = False
+    logger.error(f"[FAIL] Unexpected error importing VideoCompressor: {e}", exc_info=True)
+    logger.error("  Video compression will be unavailable.")
 
 __all__ = [
     'PDFToDocxConverter',

@@ -1,0 +1,494 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - SmartToolPDF{% endblock %}
+
+{% block extra_css %}
+<style>
+    .api-docs-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .api-hero {
+        text-align: center;
+        padding: 60px 20px;
+        background: linear-gradient(135deg, #14B8A6 0%, #0F766E 100%);
+        color: white;
+        border-radius: 12px;
+        margin-bottom: 40px;
+    }
+
+    .api-hero h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .api-hero p {
+        font-size: 1.125rem;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Tab Navigation */
+    .api-tabs {
+        display: flex;
+        gap: 8px;
+        border-bottom: 2px solid #e5e7eb;
+        margin-bottom: 30px;
+        overflow-x: auto;
+    }
+
+    .api-tab {
+        padding: 12px 24px;
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        cursor: pointer;
+        font-weight: 600;
+        color: #6b7280;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+
+    .api-tab:hover {
+        color: #14B8A6;
+    }
+
+    .api-tab.active {
+        color: #14B8A6;
+        border-bottom-color: #14B8A6;
+    }
+
+    .api-tab-content {
+        display: none;
+    }
+
+    .api-tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .api-section {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .api-section h2 {
+        color: #1f2937;
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #14B8A6;
+    }
+
+    .api-section h3 {
+        color: #374151;
+        font-size: 1.25rem;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .endpoint-card {
+        background: #f9fafb;
+        border-left: 4px solid #14B8A6;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 6px;
+    }
+
+    .endpoint-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+    .http-method {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .http-method.post {
+        background: #10b981;
+        color: white;
+    }
+
+    .http-method.get {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .http-method.put {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .http-method.delete {
+        background: #ef4444;
+        color: white;
+    }
+
+    .endpoint-url {
+        font-family: 'Courier New', monospace;
+        font-size: 1rem;
+        color: #1f2937;
+        flex: 1;
+    }
+
+    .code-block {
+        background: #1f2937;
+        color: #e5e7eb;
+        padding: 20px;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 16px 0;
+        position: relative;
+    }
+
+    .code-block pre {
+        margin: 0;
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        line-height: 1.6;
+    }
+
+    .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #374151;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.75rem;
+    }
+
+    .copy-btn:hover {
+        background: #4b5563;
+    }
+
+    .param-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 16px 0;
+    }
+
+    .param-table th,
+    .param-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .param-table th {
+        background: #f9fafb;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .param-table code {
+        background: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.875rem;
+        color: #dc2626;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .badge-required {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .badge-optional {
+        background: #f0fdf4;
+        color: #16a34a;
+    }
+
+    .status-codes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin: 16px 0;
+    }
+
+    .status-code {
+        background: #f9fafb;
+        padding: 12px;
+        border-radius: 6px;
+        border-left: 3px solid #6b7280;
+    }
+
+    .status-code.success {
+        border-left-color: #10b981;
+    }
+
+    .status-code.error {
+        border-left-color: #ef4444;
+    }
+
+    .status-code-number {
+        font-weight: 700;
+        font-size: 1.125rem;
+        color: #1f2937;
+    }
+
+    .status-code-desc {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+
+    .cta-section {
+        background: linear-gradient(135deg, #14B8A6 0%, #0F766E 100%);
+        color: white;
+        padding: 40px;
+        border-radius: 12px;
+        text-align: center;
+        margin-top: 40px;
+    }
+
+    .cta-section h2 {
+        color: white;
+        border: none;
+        margin-bottom: 1rem;
+    }
+
+    .cta-btn {
+        display: inline-block;
+        background: white;
+        color: #14B8A6;
+        padding: 12px 32px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        margin-top: 1rem;
+        transition: transform 0.2s;
+    }
+
+    .cta-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .coming-soon {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6b7280;
+    }
+
+    .coming-soon i {
+        font-size: 4rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .api-hero h1 {
+            font-size: 1.75rem;
+        }
+
+        .endpoint-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .endpoint-url {
+            word-break: break-all;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="api-docs-container">
+    <div class="api-hero">
+        <h1>🚀 API Integration Documentation</h1>
+        <p>Integrate SmartToolPDF's powerful capabilities into your application with our RESTful APIs</p>
+    </div>
+
+    <!-- API Tabs -->
+    <div class="api-tabs">
+        <button class="api-tab active" onclick="switchTab('getting-started')">
+            📖 Getting Started
+        </button>
+        <button class="api-tab" onclick="switchTab('esign-api')">
+            📝 E-Sign API
+        </button>
+        <button class="api-tab" onclick="switchTab('conversion-api')">
+            🔄 Conversion API (Coming Soon)
+        </button>
+        <button class="api-tab" onclick="switchTab('webhooks')">
+            🔔 Webhooks
+        </button>
+        <button class="api-tab" onclick="switchTab('reference')">
+            📚 Reference
+        </button>
+    </div>
+
+    <!-- Getting Started Tab -->
+    <div id="getting-started" class="api-tab-content active">
+        <div class="api-section">
+            <h2>📖 Getting Started</h2>
+            <p>The SmartToolPDF API allows you to programmatically integrate our services into your application.
+                Currently, we offer E-Sign capabilities with more APIs coming soon.</p>
+
+            <h3>Base URL</h3>
+            <div class="code-block">
+                <pre>{{ base_url }}</pre>
+            </div>
+
+            <h3>Authentication</h3>
+            <p>All API requests must include the following headers:</p>
+            <div class="code-block">
+                <pre>X-API-Key: your_api_key_here
+X-API-Secret: your_api_secret_here</pre>
+            </div>
+
+            <h3>How to Get API Credentials</h3>
+            <ol>
+                <li>Request API access via our <a href="{% url 'api:api_access_request' %}"
+                        style="color: #14B8A6; font-weight: 600;">API Access Request Form</a></li>
+                <li>Once approved, you'll receive your API Key and Secret via email</li>
+                <li>Store these credentials securely - they won't be shown again!</li>
+                <li>Include them in the headers of all your API requests</li>
+            </ol>
+
+            <h3>Available APIs</h3>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>API</th>
+                        <th>Status</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>E-Sign API</strong></td>
+                        <td><span class="badge" style="background: #d1fae5; color: #065f46;">Available</span></td>
+                        <td>Create signing sessions, track status, download signed PDFs</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Conversion API</strong></td>
+                        <td><span class="badge" style="background: #fef3c7; color: #92400e;">Coming Soon</span></td>
+                        <td>PDF conversion, compression, merging, and more</td>
+                    </tr>
+                    <tr>
+                        <td><strong>OCR API</strong></td>
+                        <td><span class="badge" style="background: #fef3c7; color: #92400e;">Planned</span></td>
+                        <td>Extract text from images and scanned documents</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- E-Sign API Tab -->
+    <div id="esign-api" class="api-tab-content">
+        {% include 'api/docs/esign_api.html' %}
+    </div>
+
+    <!-- Conversion API Tab (Coming Soon) -->
+    <div id="conversion-api" class="api-tab-content">
+        <div class="api-section">
+            <div class="coming-soon">
+                <i class="fas fa-tools"></i>
+                <h2>Conversion API Coming Soon</h2>
+                <p>We're working on bringing you powerful file conversion capabilities via API.</p>
+                <p style="margin-top: 1rem;">Features will include:</p>
+                <ul style="list-style: none; padding: 0; margin-top: 1rem;">
+                    <li>✅ PDF to DOCX/XLSX/PPTX conversion</li>
+                    <li>✅ Image to PDF conversion</li>
+                    <li>✅ PDF compression and optimization</li>
+                    <li>✅ PDF merging and splitting</li>
+                    <li>✅ Batch processing support</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Webhooks Tab -->
+    <div id="webhooks" class="api-tab-content">
+        {% include 'api/docs/webhooks.html' %}
+    </div>
+
+    <!-- Reference Tab -->
+    <div id="reference" class="api-tab-content">
+        {% include 'api/docs/reference.html' %}
+    </div>
+
+    <!-- CTA Section -->
+    <div class="cta-section">
+        <h2>Ready to Get Started?</h2>
+        <p>Request API access and start integrating our capabilities into your application today.</p>
+        <a href="{% url 'api:api_access_request' %}" class="cta-btn">Request API Access</a>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId) {
+        // Hide all tab contents
+        document.querySelectorAll('.api-tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+
+        // Remove active class from all tabs
+        document.querySelectorAll('.api-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+
+        // Show selected tab content
+        document.getElementById(tabId).classList.add('active');
+
+        // Add active class to clicked tab
+        event.target.classList.add('active');
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function copyCode(button) {
+        const codeBlock = button.nextElementSibling;
+        const code = codeBlock.textContent;
+
+        navigator.clipboard.writeText(code).then(() => {
+            button.textContent = 'Copied!';
+            setTimeout(() => {
+                button.textContent = 'Copy';
+            }, 2000);
+        });
+    }
+</script>
+{% endblock %}

@@ -8,17 +8,17 @@
             <div class="footer-column footer-about">
                 <img src="{% static 'images/logo/logo.png' %}" alt="SmartToolPDF" class="footer-logo" />
                 <p class="footer-description">
-                    Your smart solution for PDF and file conversions. 
+                    Your smart solution for PDF and file conversions.
                     Convert, compress, and edit files online with ease.
                 </p>
-<!--                <div class="social-links">-->
-<!--                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>-->
-<!--                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>-->
-<!--                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>-->
-<!--                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>-->
-<!--                </div>-->
+                <!--                <div class="social-links">-->
+                <!--                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>-->
+                <!--                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>-->
+                <!--                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>-->
+                <!--                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>-->
+                <!--                </div>-->
             </div>
-            
+
             <div class="footer-column">
                 <h4>Tools</h4>
                 <ul>
@@ -29,7 +29,7 @@
                     <li><a href="{% url 'tools:tool_list' %}">View All Tools</a></li>
                 </ul>
             </div>
-            
+
             <div class="footer-column">
                 <h4>Company</h4>
                 <ul>
@@ -38,16 +38,17 @@
                     <li><a href="{% url 'dashboard:contact' %}">Contact</a></li>
                 </ul>
             </div>
-            
+
             <div class="footer-column">
                 <h4>Support</h4>
                 <ul>
                     <li><a href="{% url 'dashboard:help' %}">Help Center</a></li>
                     <li><a href="{% url 'dashboard:faq' %}">FAQ</a></li>
                     <li><a href="{% url 'dashboard:security' %}">Security</a></li>
+                    <li><a href="{% url 'api:api_documentation' %}">API Integration</a></li>
                 </ul>
             </div>
-            
+
             <div class="footer-column">
                 <h4>Contact Us</h4>
                 <p style="font-size: 0.875rem; line-height: 1.6;">
@@ -65,12 +66,13 @@
                 </p>
             </div>
         </div>
-        
+
         <!-- Footer Bottom Section -->
         <div class="footer-bottom">
             <div class="footer-bottom-content">
                 <p class="copyright">
-                    &copy; {% now "Y" %} SmartToolPDF.com. All rights reserved.  - A product of Arvento Technologies. Powered by Agentic AI
+                    &copy; {% now "Y" %} SmartToolPDF.com. All rights reserved. - A product of Arvento Technologies.
+                    Powered by Agentic AI
                 </p>
                 <div class="footer-bottom-links">
                     <a href="{% url 'dashboard:privacy' %}">Privacy</a>
@@ -78,7 +80,7 @@
                     <a href="{% url 'dashboard:terms' %}">Terms</a>
                 </div>
             </div>
-           
+
         </div>
     </div>
 </footer>
@@ -88,30 +90,30 @@
     <div class="container">
         <div class="footer-mobile-content">
             <img src="{% static 'images/logo/logo.png' %}" alt="SmartToolPDF" class="footer-logo" />
-            
+
             <div class="footer-links-mobile">
                 <a href="{% url 'dashboard:about' %}">About</a>
                 <a href="{% url 'dashboard:pricing' %}">Pricing</a>
                 <a href="{% url 'dashboard:contact' %}">Contact</a>
             </div>
-            
+
             <div class="social-links">
                 <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
                 <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
                 <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
             </div>
-            
+
             <p class="copyright">
                 &copy; {% now "Y" %} SmartToolPDF.com<br>
                 All rights reserved. - A product of Arvento Technologies. Powered by Agentic AI
             </p>
-            
+
             <div class="footer-legal">
-                <a href="{% url 'dashboard:privacy' %}">Privacy</a> | 
+                <a href="{% url 'dashboard:privacy' %}">Privacy</a> |
                 <a href="{% url 'dashboard:terms' %}">Terms</a>
             </div>
-            
-           
+
+
         </div>
     </div>
 </footer>

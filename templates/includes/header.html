@@ -20,6 +20,7 @@
                     <li><a href="{% url 'tools:category_detail' slug='convert' %}">Convert</a></li>
                     <li><a href="{% url 'tools:category_detail' slug='compress' %}">Compress</a></li>
                     <li><a href="{% url 'tools:category_detail' slug='edit' %}">Edit</a></li>
+					<li><a href="{% url 'tools:category_detail' slug='esign' %}">E-Sign</a></li>
                 </ul>
             </nav>
             
@@ -81,202 +82,203 @@
             {% if user.is_authenticated %}
                 <div class="user-info">
                     {% if user.avatar %}
-                        <img src="{{ user.avatar.url }}" alt="{{ user.username }}" />
+                    <img src="{{ user.avatar.url }}" alt="{{ user.username }}" />
                     {% else %}
-                        <span class="avatar-placeholder">{{ user.username|slice:":1"|upper }}</span>
+                    <span class="avatar-placeholder">{{ user.username|slice:":1"|upper }}</span>
                     {% endif %}
                     <span>{{ user.username }}</span>
                 </div>
-            {% endif %}
-        </div>
-        <ul>
-            <li><a href="{% url 'dashboard:home' %}">Home</a></li>
-            <li><a href="{% url 'tools:tool_list' %}">All Tools</a></li>
-            <li><a href="{% url 'tools:category_detail' slug='convert' %}">Convert</a></li>
-            <li><a href="{% url 'tools:category_detail' slug='compress' %}">Compress</a></li>
-            <li><a href="{% url 'tools:category_detail' slug='edit' %}">Edit</a></li>
-            {% if user.is_authenticated %}
+                {% endif %}
+            </div>
+            <ul>
+                <li><a href="{% url 'dashboard:home' %}">Home</a></li>
+                <li><a href="{% url 'tools:tool_list' %}">All Tools</a></li>
+                <li><a href="{% url 'tools:category_detail' slug='convert' %}">Convert</a></li>
+                <li><a href="{% url 'tools:category_detail' slug='compress' %}">Compress</a></li>
+                <li><a href="{% url 'tools:category_detail' slug='edit' %}">Edit</a></li>
+                <li><a href="{% url 'tools:category_detail' slug='esign' %}">E-Sign</a></li>
+                {% if user.is_authenticated %}
                 <li><a href="{% url 'dashboard:dashboard' %}">Dashboard</a></li>
                 <li><a href="{% url 'accounts:profile' %}">Profile</a></li>
                 <li><a href="{% url 'tools:conversion_history' %}">History</a></li>
                 <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
-            {% else %}
+                {% else %}
                 <li><a href="{% url 'accounts:login' %}">Login</a></li>
                 <li><a href="{% url 'accounts:register' %}">Sign Up</a></li>
-            {% endif %}
-        </ul>
-    </nav>
+                {% endif %}
+            </ul>
+        </nav>
 </header>
 
 <style>
-/* User Menu & Avatar Dropdown */
-.user-menu {
-    position: relative;
-}
+    /* User Menu & Avatar Dropdown */
+    .user-menu {
+        position: relative;
+    }
 
-.user-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 2px solid var(--primary-color);
-    background: var(--primary-color);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    padding: 0;
-}
+    .user-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 2px solid var(--primary-color);
+        background: var(--primary-color);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        padding: 0;
+    }
 
-.user-avatar:hover {
-    transform: scale(1.05);
-    border-color: var(--secondary-color);
-    background: var(--secondary-color);
-}
+    .user-avatar:hover {
+        transform: scale(1.05);
+        border-color: var(--secondary-color);
+        background: var(--secondary-color);
+    }
 
-.avatar-letter {
-    color: white;
-    font-size: 1.125rem;
-    font-weight: 700;
-}
+    .avatar-letter {
+        color: white;
+        font-size: 1.125rem;
+        font-weight: 700;
+    }
 
-.user-dropdown {
-    position: absolute;
-    top: calc(100% + 10px);
-    right: 0;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    min-width: 220px;
-    z-index: 9999;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.3s ease;
-}
+    .user-dropdown {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        min-width: 220px;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    }
 
-.user-dropdown.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
+    .user-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
 
-.dropdown-header {
-    padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-    background: #f9fafb;
-    border-radius: 8px 8px 0 0;
-}
+    .dropdown-header {
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        background: #f9fafb;
+        border-radius: 8px 8px 0 0;
+    }
 
-.dropdown-header strong {
-    display: block;
-    color: #111827;
-    font-size: 0.875rem;
-    word-break: break-word;
-}
+    .dropdown-header strong {
+        display: block;
+        color: #111827;
+        font-size: 0.875rem;
+        word-break: break-word;
+    }
 
-.premium-badge-small {
-    display: inline-block;
-    margin-top: 0.25rem;
-    padding: 0.125rem 0.5rem;
-    background: linear-gradient(135deg, #FFD700, #FFA500);
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 4px;
-}
+    .premium-badge-small {
+        display: inline-block;
+        margin-top: 0.25rem;
+        padding: 0.125rem 0.5rem;
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 4px;
+    }
 
-.user-dropdown a {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    color: #374151;
-    text-decoration: none;
-    transition: background 0.2s ease;
-}
+    .user-dropdown a {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: #374151;
+        text-decoration: none;
+        transition: background 0.2s ease;
+    }
 
-.user-dropdown a:hover {
-    background: #f3f4f6;
-    color: var(--primary-color);
-}
+    .user-dropdown a:hover {
+        background: #f3f4f6;
+        color: var(--primary-color);
+    }
 
-.user-dropdown a i {
-    width: 1.25rem;
-    text-align: center;
-    font-size: 0.875rem;
-}
+    .user-dropdown a i {
+        width: 1.25rem;
+        text-align: center;
+        font-size: 0.875rem;
+    }
 
-.dropdown-divider {
-    height: 1px;
-    background: #e5e7eb;
-    margin: 0.5rem 0;
-}
+    .dropdown-divider {
+        height: 1px;
+        background: #e5e7eb;
+        margin: 0.5rem 0;
+    }
 
-.upgrade-link {
-    background: linear-gradient(135deg, #FFD700, #FFA500) !important;
-    color: white !important;
-    font-weight: 600 !important;
-}
+    .upgrade-link {
+        background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+        color: white !important;
+        font-weight: 600 !important;
+    }
 
-.upgrade-link:hover {
-    background: linear-gradient(135deg, #FFA500, #FF8C00) !important;
-    color: white !important;
-    transform: translateX(4px);
-}
+    .upgrade-link:hover {
+        background: linear-gradient(135deg, #FFA500, #FF8C00) !important;
+        color: white !important;
+        transform: translateX(4px);
+    }
 
-.logout-link {
-    color: #dc2626 !important;
-    border-radius: 0 0 8px 8px;
-}
+    .logout-link {
+        color: #dc2626 !important;
+        border-radius: 0 0 8px 8px;
+    }
 
-.logout-link:hover {
-    background: #fef2f2 !important;
-    color: #dc2626 !important;
-}
+    .logout-link:hover {
+        background: #fef2f2 !important;
+        color: #dc2626 !important;
+    }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Mobile menu toggle
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const mobileNav = document.getElementById('mobileNav');
-    
-    if (mobileMenuToggle && mobileNav) {
-        mobileMenuToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            mobileNav.classList.toggle('active');
-            this.classList.toggle('active');
-        });
-    }
+    document.addEventListener('DOMContentLoaded', function () {
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileNav = document.getElementById('mobileNav');
 
-    // User dropdown toggle
-    const userMenuButton = document.getElementById('userMenuButton');
-    const userDropdown = document.getElementById('userDropdown');
-    
-    if (userMenuButton && userDropdown) {
-        userMenuButton.addEventListener('click', function(e) {
-            e.stopPropagation();
-            userDropdown.classList.toggle('show');
-        });
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.user-menu')) {
-                userDropdown.classList.remove('show');
-            }
-        });
-    }
-
-    // Close mobile menu when clicking outside
-    document.addEventListener('click', function(event) {
-        if (mobileNav && !event.target.closest('.hamburger-menu') && !event.target.closest('.mobile-nav')) {
-            mobileNav.classList.remove('active');
-            if (mobileMenuToggle) {
-                mobileMenuToggle.classList.remove('active');
-            }
+        if (mobileMenuToggle && mobileNav) {
+            mobileMenuToggle.addEventListener('click', function (e) {
+                e.stopPropagation();
+                mobileNav.classList.toggle('active');
+                this.classList.toggle('active');
+            });
         }
+
+        // User dropdown toggle
+        const userMenuButton = document.getElementById('userMenuButton');
+        const userDropdown = document.getElementById('userDropdown');
+
+        if (userMenuButton && userDropdown) {
+            userMenuButton.addEventListener('click', function (e) {
+                e.stopPropagation();
+                userDropdown.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (event) {
+                if (!event.target.closest('.user-menu')) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function (event) {
+            if (mobileNav && !event.target.closest('.hamburger-menu') && !event.target.closest('.mobile-nav')) {
+                mobileNav.classList.remove('active');
+                if (mobileMenuToggle) {
+                    mobileMenuToggle.classList.remove('active');
+                }
+            }
+        });
     });
-});
 </script>

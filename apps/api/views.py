@@ -915,3 +915,17 @@ class APIAccessThankYouView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Thank You for Your Request'
         return context
+
+
+class APIDocumentationView(TemplateView):
+    """
+    Public API documentation page showing all endpoints and examples.
+    """
+    template_name = 'api/api_documentation.html'
+    
+    def get_context_data(self, **kwargs):
+        """Add API documentation context."""
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'API Integration Documentation'
+        context['base_url'] = self.request.build_absolute_uri('/api/v1/')
+        return context

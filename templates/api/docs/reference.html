@@ -1,0 +1,169 @@
+<div class="api-section">
+    <h2>📚 API Reference</h2>
+
+    <h3>⚠️ Error Codes</h3>
+    <div class="status-codes">
+        <div class="status-code success">
+            <div class="status-code-number">200</div>
+            <div class="status-code-desc">OK - Request successful</div>
+        </div>
+        <div class="status-code success">
+            <div class="status-code-number">201</div>
+            <div class="status-code-desc">Created - Resource created</div>
+        </div>
+        <div class="status-code error">
+            <div class="status-code-number">400</div>
+            <div class="status-code-desc">Bad Request - Invalid parameters</div>
+        </div>
+        <div class="status-code error">
+            <div class="status-code-number">401</div>
+            <div class="status-code-desc">Unauthorized - Invalid credentials</div>
+        </div>
+        <div class="status-code error">
+            <div class="status-code-number">404</div>
+            <div class="status-code-desc">Not Found - Resource doesn't exist</div>
+        </div>
+        <div class="status-code error">
+            <div class="status-code-number">429</div>
+            <div class="status-code-desc">Too Many Requests - Rate limit exceeded</div>
+        </div>
+        <div class="status-code error">
+            <div class="status-code-number">500</div>
+            <div class="status-code-desc">Internal Server Error</div>
+        </div>
+    </div>
+
+    <h3>Error Response Format</h3>
+    <div class="code-block">
+        <pre>{
+  "success": false,
+  "error": "Error message here",
+  "code": "ERROR_CODE",
+  "details": "Additional error details"
+}</pre>
+    </div>
+</div>
+
+<div class="api-section">
+    <h2>⏱️ Rate Limits</h2>
+    <p>API requests are rate-limited based on your subscription plan:</p>
+    <table class="param-table">
+        <thead>
+            <tr>
+                <th>Plan</th>
+                <th>Requests/Minute</th>
+                <th>Requests/Month</th>
+                <th>Max File Size</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Free</strong></td>
+                <td>10</td>
+                <td>1,000</td>
+                <td>10 MB</td>
+            </tr>
+            <tr>
+                <td><strong>Starter</strong></td>
+                <td>50</td>
+                <td>10,000</td>
+                <td>50 MB</td>
+            </tr>
+            <tr>
+                <td><strong>Professional</strong></td>
+                <td>200</td>
+                <td>100,000</td>
+                <td>100 MB</td>
+            </tr>
+            <tr>
+                <td><strong>Enterprise</strong></td>
+                <td>1,000</td>
+                <td>Unlimited</td>
+                <td>500 MB</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Rate Limit Headers</h3>
+    <p>All API responses include rate limit information in the headers:</p>
+    <div class="code-block">
+        <pre>X-RateLimit-Limit: 200
+X-RateLimit-Remaining: 195
+X-RateLimit-Reset: 1638360000</pre>
+    </div>
+</div>
+
+<div class="api-section">
+    <h2>🔒 Security Best Practices</h2>
+    <ul>
+        <li><strong>Keep credentials secure:</strong> Never commit API keys to version control</li>
+        <li><strong>Use environment variables:</strong> Store credentials in environment variables or secure vaults</li>
+        <li><strong>Rotate keys regularly:</strong> Generate new API keys periodically</li>
+        <li><strong>Use HTTPS only:</strong> Always make API requests over HTTPS</li>
+        <li><strong>Validate webhook signatures:</strong> Always verify webhook signatures before processing</li>
+        <li><strong>Implement IP whitelisting:</strong> Configure IP restrictions in your merchant dashboard</li>
+        <li><strong>Monitor usage:</strong> Regularly check your API usage logs for suspicious activity</li>
+    </ul>
+</div>
+
+<div class="api-section">
+    <h2>🌍 Supported Regions</h2>
+    <p>Our API is currently available in the following regions:</p>
+    <table class="param-table">
+        <thead>
+            <tr>
+                <th>Region</th>
+                <th>Endpoint</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Global (Primary)</td>
+                <td><code>{{ base_url }}</code></td>
+                <td><span class="badge" style="background: #d1fae5; color: #065f46;">Active</span></td>
+            </tr>
+            <tr>
+                <td>Asia-Pacific</td>
+                <td><code>Coming Soon</code></td>
+                <td><span class="badge" style="background: #fef3c7; color: #92400e;">Planned</span></td>
+            </tr>
+            <tr>
+                <td>Europe</td>
+                <td><code>Coming Soon</code></td>
+                <td><span class="badge" style="background: #fef3c7; color: #92400e;">Planned</span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="api-section">
+    <h2>📞 Support & Resources</h2>
+    <h3>Need Help?</h3>
+    <ul>
+        <li><strong>Email Support:</strong> <a href="mailto:smarttoolpdf@gmail.com"
+                style="color: #14B8A6;">smarttoolpdf@gmail.com</a></li>
+        <li><strong>Merchant Dashboard:</strong> <a href="{% url 'api:merchant_dashboard' %}"
+                style="color: #14B8A6;">View your usage and manage API keys</a></li>
+        <li><strong>Status Page:</strong> Check our service status and uptime</li>
+        <li><strong>GitHub Examples:</strong> Sample code and integration examples (Coming Soon)</li>
+    </ul>
+
+    <h3>Changelog</h3>
+    <table class="param-table">
+        <thead>
+            <tr>
+                <th>Version</th>
+                <th>Date</th>
+                <th>Changes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>v1.0</strong></td>
+                <td>Dec 2025</td>
+                <td>Initial release with E-Sign API</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

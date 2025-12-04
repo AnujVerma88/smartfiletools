@@ -141,11 +141,42 @@
                                 <i class="fas fa-mobile-alt"></i> Or pay manually using UPI ID:
                             </p>
                             <p style="font-weight: 700; color: #111827; font-size: 1.125rem; margin-bottom: 0.5rem; text-align: center; font-family: monospace;">
-                                vanuj022-1@okhdfcbank
+                                arven93798436@barodampay
                             </p>
-                            <p style="color: #6B7280; font-size: 0.75rem; text-align: center;">
+                            <p style="color: #6B7280; font-size: 0.75rem; text-align: center; margin-bottom: 1rem;">
                                 Amount: <strong>₹{{ total_amount }}</strong> | Reference: {{ user.email }}
                             </p>
+                            
+                            <!-- UPI Apps Logos -->
+                            <div style="border-top: 1px solid #E5E7EB; padding-top: 1rem; margin-top: 1rem;">
+                                <p style="color: #9CA3AF; font-size: 0.7rem; text-align: center; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
+                                    We accept payments from
+                                </p>
+                                <div style="display: flex; justify-content: center; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                                    <!-- Google Pay -->
+                                    <img src="{% static 'images/payment-logos/Google_Pay_Logo.svg' %}" alt="Google Pay" style="height: 28px; width: auto; object-fit: contain;">
+                                    
+                                    <span style="color: #D1D5DB; font-size: 1rem;">|</span>
+                                    
+                                    <!-- PhonePe -->
+                                    <img src="{% static 'images/payment-logos/PhonePe_Logo.svg.webp' %}" alt="PhonePe" style="height: 28px; width: auto; object-fit: contain;">
+                                    
+                                    <span style="color: #D1D5DB; font-size: 1rem;">|</span>
+                                    
+                                    <!-- Paytm -->
+                                    <img src="{% static 'images/payment-logos/Paytm_logo.jpg' %}" alt="Paytm" style="height: 28px; width: auto; object-fit: contain;">
+                                    
+                                    <span style="color: #D1D5DB; font-size: 1rem;">|</span>
+                                    
+                                    <!-- BHIM -->
+                                    <img src="{% static 'images/payment-logos/bhim.avif' %}" alt="BHIM" style="height: 28px; width: auto; object-fit: contain;">
+                                    
+                                    <span style="color: #D1D5DB; font-size: 1rem;">|</span>
+                                    
+                                    <!-- BharatPe -->
+                                    <img src="{% static 'images/payment-logos/BharatPe.svg' %}" alt="BharatPe" style="height: 28px; width: auto; object-fit: contain;">
+                                </div>
+                            </div>
                         </div>
 
                         <button onclick="confirmPayment()" style="width: 100%; padding: 1rem; background: #14B8A6; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s;">
@@ -244,8 +275,8 @@
 // Generate QR Code with UPI URL
 document.addEventListener('DOMContentLoaded', function() {
     // UPI payment details
-    const merchantUpiId = 'vanuj022-1@okhdfcbank';
-    const merchantName = 'SmartToolPDF';
+    const merchantUpiId = 'arven93798436@barodampay';
+    const merchantName = 'ARVENTO TECHNOLOGIES';
     const amount = '{{ total_amount }}';
     const currency = 'INR';
     const planName = '{{ plan_name }}';
@@ -303,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
             '<i class="fas fa-exclamation-triangle" style="color: #F59E0B; font-size: 2rem; margin-bottom: 0.5rem;"></i>' +
             '<p style="color: #6B7280; font-size: 0.875rem; font-weight: 600;">QR Code generation failed</p>' +
             '<p style="color: #6B7280; font-size: 0.75rem; margin-top: 0.5rem;">Please use the UPI ID below for manual payment</p>' +
-            '<p style="color: #14B8A6; font-size: 0.875rem; font-weight: 700; margin-top: 1rem; font-family: monospace;">vanuj022-1@okhdfcbank</p>' +
+            '<p style="color: #14B8A6; font-size: 0.875rem; font-weight: 700; margin-top: 1rem; font-family: monospace;">arven93798436@barodampay</p>' +
             '<p style="color: #6B7280; font-size: 0.75rem; margin-top: 0.5rem;">Amount: ₹' + formattedAmount + '</p>' +
             '</div>';
     }

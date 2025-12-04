@@ -6,6 +6,7 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
 from . import views_merchant
+from . import views_esign
 
 app_name = 'api'
 
@@ -46,6 +47,13 @@ conversion_detail_patterns = [
     path('', views.ConversionHistoryListView.as_view(), name='conversion-list'),
 ]
 
+# E-Sign API endpoints
+esign_patterns = [
+    path('create/', views_esign.ESignCreateSessionView.as_view(), name='esign-create'),
+    path('status/<uuid:session_id>/', views_esign.ESignStatusView.as_view(), name='esign-status'),
+    path('download/<uuid:session_id>/', views_esign.ESignDownloadView.as_view(), name='esign-download'),
+]
+
 # User profile endpoints
 user_patterns = [
     path('profile/', views.UserProfileView.as_view(), name='user-profile'),
@@ -58,6 +66,7 @@ user_patterns = [
 api_access_patterns = [
     path('', views.APIAccessRequestView.as_view(), name='api_access_request'),
     path('thank-you/', views.APIAccessThankYouView.as_view(), name='api_access_thank_you'),
+    path('documentation/', views.APIDocumentationView.as_view(), name='api_documentation'),
 ]
 
 # Merchant dashboard and API key management endpoints
@@ -81,6 +90,7 @@ urlpatterns = [
     path('v1/tools/', include(tool_patterns)),
     path('v1/convert/', include(conversion_patterns)),
     path('v1/conversions/', include(conversion_detail_patterns)),
+    path('v1/esign/', include(esign_patterns)),
     path('v1/user/', include(user_patterns)),
     # Web-based API access request form
     path('access/', include(api_access_patterns)),

@@ -86,7 +86,66 @@ def dashboard_view(request):
     daily_limit = 'Unlimited' if user.is_premium else settings.DAILY_CONVERSION_LIMIT_FREE
     
     # Get recent conversions (last 10)
-    recent_conversions = user.conversions.order_by('-created_at')[:10]
+    conversions = list(user.conversions.order_by('-created_at')[:10])
+    
+    # Get recent sign sessions
+    from apps.esign.models import SignSession
+    sign_sessions = user.sign_sessions.order_by('-created_at')[:10]
+    
+    # Adapt sign sessions to look like conversions
+    adapted_sessions = []
+    for session in sign_sessions:
+        # Create a wrapper object or dict that mimics ConversionHistory
+        class SignSessionAdapter:
+            def __init__(self, session):
+                self.id = session.id
+                self.tool_type = 'esign'
+                self.status = session.status
+                self.created_at = session.created_at
+                self.input_file = session.original_pdf
+                self.output_file = session.signed_pdf
+                self.original_session = session
+                
+            @property
+            def get_tool_type_display(self):
+                return "E-Sign PDF"
+                
+            @property
+            def get_status_display(self):
+                return self.original_session.get_status_display()
+                
+            # Helper for template logic that checks status == 'completed'
+            @property
+            def is_completed(self):
+                return self.status == 'signed'
+                
+            # Helper for status badge class
+            @property
+            def status_class(self):
+                if self.status == 'signed':
+                    return 'completed'
+                elif self.status in ['signing', 'otp_verified']:
+                    return 'processing'
+                elif self.status == 'failed':
+                    return 'failed'
+                else:
+                    return 'pending'
+            
+            @property
+            def is_esign(self):
+                return True
+                
+        adapted_sessions.append(SignSessionAdapter(session))
+    
+    # Combine and sort
+    from operator import attrgetter
+    combined_history = sorted(
+        conversions + adapted_sessions,
+        key=attrgetter('created_at'),
+        reverse=True
+    )[:10]
+    
+    recent_conversions = combined_history
     
     # Get conversions from last 7 days for chart
     seven_days_ago = timezone.now() - timedelta(days=7)

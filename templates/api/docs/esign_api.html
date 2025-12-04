@@ -1,0 +1,194 @@
+<div class="api-section">
+    <h2>📝 E-Sign API</h2>
+    <p>Create electronic signature sessions, track their status, and download signed documents programmatically.</p>
+
+    <!-- Create Session Endpoint -->
+    <div class="endpoint-card">
+        <div class="endpoint-header">
+            <span class="http-method post">POST</span>
+            <span class="endpoint-url">/esign/create/</span>
+        </div>
+        <p><strong>Create a new e-signature session</strong></p>
+        <p>Upload a PDF document and create a signing session. An OTP will be automatically sent to the signer's email.
+        </p>
+
+        <h4>Request Parameters</h4>
+        <table class="param-table">
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Type</th>
+                    <th>Required</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>file</code></td>
+                    <td>File</td>
+                    <td><span class="badge badge-required">Required</span></td>
+                    <td>PDF file to be signed (max 50MB)</td>
+                </tr>
+                <tr>
+                    <td><code>signer_email</code></td>
+                    <td>String</td>
+                    <td><span class="badge badge-required">Required</span></td>
+                    <td>Email address of the signer</td>
+                </tr>
+                <tr>
+                    <td><code>signer_name</code></td>
+                    <td>String</td>
+                    <td><span class="badge badge-required">Required</span></td>
+                    <td>Full name of the signer</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>Example Request (cURL)</h4>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre>curl -X POST {{ base_url }}esign/create/ \
+  -H "X-API-Key: stpdf_test_YOUR_KEY" \
+  -H "X-API-Secret: YOUR_SECRET" \
+  -F "file=@contract.pdf" \
+  -F "signer_email=john.doe@example.com" \
+  -F "signer_name=John Doe"</pre>
+        </div>
+
+        <h4>Example Request (Python)</h4>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre>import requests
+
+url = "{{ base_url }}esign/create/"
+headers = {
+    "X-API-Key": "stpdf_test_YOUR_KEY",
+    "X-API-Secret": "YOUR_SECRET"
+}
+files = {"file": open("contract.pdf", "rb")}
+data = {
+    "signer_email": "john.doe@example.com",
+    "signer_name": "John Doe"
+}
+
+response = requests.post(url, headers=headers, files=files, data=data)
+print(response.json())</pre>
+        </div>
+
+        <h4>Success Response (201 Created)</h4>
+        <div class="code-block">
+            <pre>{
+  "success": true,
+  "session_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "status": "otp_sent",
+  "signing_url": "https://smarttoolpdf.com/esign/sign/a1b2c3d4-.../",
+  "message": "Session created and OTP sent"
+}</pre>
+        </div>
+    </div>
+
+    <!-- Get Status Endpoint -->
+    <div class="endpoint-card">
+        <div class="endpoint-header">
+            <span class="http-method get">GET</span>
+            <span class="endpoint-url">/esign/status/&lt;session_id&gt;/</span>
+        </div>
+        <p><strong>Check the status of a signing session</strong></p>
+
+        <h4>Example Request (cURL)</h4>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre>curl -X GET {{ base_url }}esign/status/SESSION_ID/ \
+  -H "X-API-Key: stpdf_test_YOUR_KEY" \
+  -H "X-API-Secret: YOUR_SECRET"</pre>
+        </div>
+
+        <h4>Success Response (200 OK)</h4>
+        <div class="code-block">
+            <pre>{
+  "success": true,
+  "session_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "status": "signed",
+  "created_at": "2025-12-04T10:00:00Z",
+  "signed_at": "2025-12-04T10:15:30Z",
+  "is_expired": false
+}</pre>
+        </div>
+
+        <h4>Status Values</h4>
+        <table class="param-table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>created</code></td>
+                    <td>Session created</td>
+                </tr>
+                <tr>
+                    <td><code>otp_sent</code></td>
+                    <td>OTP sent to signer</td>
+                </tr>
+                <tr>
+                    <td><code>otp_verified</code></td>
+                    <td>Signer verified, ready to sign</td>
+                </tr>
+                <tr>
+                    <td><code>signing</code></td>
+                    <td>PDF is being processed</td>
+                </tr>
+                <tr>
+                    <td><code>signed</code></td>
+                    <td>✅ Document successfully signed</td>
+                </tr>
+                <tr>
+                    <td><code>failed</code></td>
+                    <td>❌ Signing failed</td>
+                </tr>
+                <tr>
+                    <td><code>expired</code></td>
+                    <td>⏰ Session expired</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Download PDF Endpoint -->
+    <div class="endpoint-card">
+        <div class="endpoint-header">
+            <span class="http-method get">GET</span>
+            <span class="endpoint-url">/esign/download/&lt;session_id&gt;/</span>
+        </div>
+        <p><strong>Download the signed PDF document</strong></p>
+        <p>Only available when status is <code>signed</code></p>
+
+        <h4>Example Request (cURL)</h4>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre>curl -X GET {{ base_url }}esign/download/SESSION_ID/ \
+  -H "X-API-Key: stpdf_test_YOUR_KEY" \
+  -H "X-API-Secret: YOUR_SECRET" \
+  -o signed_document.pdf</pre>
+        </div>
+
+        <h4>Example Request (Python)</h4>
+        <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre>import requests
+
+session_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+url = f"{{ base_url }}esign/download/{session_id}/"
+headers = {
+    "X-API-Key": "stpdf_test_YOUR_KEY",
+    "X-API-Secret": "YOUR_SECRET"
+}
+
+response = requests.get(url, headers=headers)
+with open("signed_document.pdf", "wb") as f:
+    f.write(response.content)</pre>
+        </div>
+    </div>
+</div>

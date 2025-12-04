@@ -22,3 +22,76 @@ sudo systemctl restart smartfiletools
 sudo systemctl restart smartfiletools-celery
 sudo systemctl restart smartfiletools-celerybeat
 sudo systemctl restart nginx
+
+
+sudo systemctl restart smartfiletools.service smartfiletools smartfiletools-celery smartfiletools-celerybeat nginx
+
+
+=============== 
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\Users\AnujVerma> wsl -d Ubuntu -- echo hello
+hello
+PS C:\Users\AnujVerma> wsl -d Ubuntu
+anujverma@Saswat-AnujVerma:/mnt/c/Users/AnujVerma$
+anujverma@Saswat-AnujVerma:/mnt/c/Users/AnujVerma$ sudo su
+[sudo] password for anujverma:
+Sorry, try again.
+[sudo] password for anujverma:
+Sorry, try again.
+[sudo] password for anujverma:
+sudo: 3 incorrect password attempts
+anujverma@Saswat-AnujVerma:/mnt/c/Users/AnujVerma$ sudo su
+[sudo] password for anujverma:
+root@Saswat-AnujVerma:/mnt/c/Users/AnujVerma# sudo systemctl start redis-server
+root@Saswat-AnujVerma:/mnt/c/Users/AnujVerma# sudo systemctl status redis-server
+● redis-server.service - Advanced key-value store
+     Loaded: loaded (/usr/lib/systemd/system/redis-server.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2025-11-25 13:59:15 UTC; 2min 13s ago
+       Docs: http://redis.io/documentation,
+             man:redis-server(1)
+   Main PID: 141 (redis-server)
+     Status: "Ready to accept connections"
+      Tasks: 5 (limit: 8226)
+     Memory: 13.0M ()
+     CGroup: /system.slice/redis-server.service
+             └─141 "/usr/bin/redis-server 0.0.0.0:6379"
+
+Nov 25 13:59:15 Saswat-AnujVerma systemd[1]: Starting redis-server.service - Advanced key-value store...
+Nov 25 13:59:15 Saswat-AnujVerma systemd[1]: Started redis-server.service - Advanced key-value store.
+root@Saswat-AnujVerma:/mnt/c/Users/AnujVerma# redis-cli ping
+PONG
+root@Saswat-AnujVerma:/mnt/c/Users/AnujVerma# redis-cli -h 172.29.112.1 ping
+
+^C
+root@Saswat-AnujVerma:/mnt/c/Users/AnujVerma# hostname
+Saswat-AnujVerma
+root@Saswat-AnujVerma:/mnt/c/Users/AnujVerma# hostname -I
+172.24.175.189
+root@Saswat-AnujVerma:/mnt/c/Users/AnujVerma# redis-cli -h 172.24.175.189 ping
+PONG
+root@Saswat-AnujVerma:/mnt/c/Users/AnujVerma#
+root@Saswat-AnujVerma:/mnt/c/Users/AnujVerma# redis-cli -h 172.24.175.189 ping
+PONG
+
+root@Saswat-AnujVerma:/mnt/c/Users/AnujVerma# sudo systemctl restart redis-server
+root@Saswat-AnujVerma:/mnt/c/Users/AnujVerma# sudo systemctl status redis-server
+● redis-server.service - Advanced key-value store
+     Loaded: loaded (/usr/lib/systemd/system/redis-server.service; enabled; preset: enabled)
+     Active: active (running) since Tue 2025-12-02 09:27:42 UTC; 7s ago
+       Docs: http://redis.io/documentation,
+             man:redis-server(1)
+   Main PID: 11431 (redis-server)
+     Status: "Ready to accept connections"
+      Tasks: 5 (limit: 8226)
+     Memory: 8.6M ()
+     CGroup: /system.slice/redis-server.service
+             └─11431 "/usr/bin/redis-server 0.0.0.0:6379"
+
+Dec 02 09:27:42 Saswat-AnujVerma systemd[1]: Starting redis-server.service - Advanced key-value store...
+Dec 02 09:27:42 Saswat-AnujVerma systemd[1]: Started redis-server.service - Advanced key-value store.
+root@Saswat-AnujVerma:/mnt/c/Users/AnujVerma#

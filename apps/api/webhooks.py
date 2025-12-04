@@ -1,6 +1,6 @@
 """
 Webhook Delivery System.
-Handles webhook notifications to merchants when conversions complete.
+Handles webhook notifications to merchants when conversions or e-sign sessions complete.
 """
 import hmac
 import hashlib
@@ -18,13 +18,6 @@ logger = logging.getLogger('apps.api')
 def generate_webhook_signature(payload, secret):
     """
     Generate HMAC-SHA256 signature for webhook payload.
-    
-    Args:
-        payload: dict - Webhook payload data
-        secret: str - Merchant's webhook secret
-    
-    Returns:
-        str: Hex digest of HMAC signature
     """
     # Convert payload to JSON string with sorted keys for consistency
     message = json.dumps(payload, sort_keys=True).encode('utf-8')
@@ -42,83 +35,87 @@ def generate_webhook_signature(payload, secret):
 def verify_webhook_signature(payload, signature, secret):
     """
     Verify webhook signature.
-    
-    Args:
-        payload: dict - Webhook payload data
-        signature: str - Provided signature
-        secret: str - Merchant's webhook secret
-    
-    Returns:
-        bool: True if signature is valid
     """
     expected_signature = generate_webhook_signature(payload, secret)
     return hmac.compare_digest(signature, expected_signature)
 
 
-def create_webhook_payload(conversion):
+def create_webhook_payload(obj):
     """
-    Create webhook payload for a conversion.
-    
-    Args:
-        conversion: ConversionHistory instance
-    
-    Returns:
-        dict: Webhook payload
+    Create webhook payload for a conversion or sign session.
     """
-    payload = {
-        'event': f'conversion.{conversion.status}',
-        'conversion_id': str(conversion.id),
-        'status': conversion.status,
-        'tool_type': conversion.tool_type,
-        'created_at': conversion.created_at.isoformat(),
-        'completed_at': conversion.completed_at.isoformat() if conversion.completed_at else None,
-        'processing_time': conversion.processing_time,
-    }
-    
-    # Add input file info
-    if conversion.input_file:
-        payload['input_file'] = {
-            'name': conversion.input_file.name.split('/')[-1],
-            'size': conversion.file_size_before,
+    from apps.tools.models import ConversionHistory
+    from apps.esign.models import SignSession
+
+    if isinstance(obj, ConversionHistory):
+        payload = {
+            'event': f'conversion.{obj.status}',
+            'conversion_id': str(obj.id),
+            'status': obj.status,
+            'tool_type': obj.tool_type,
+            'created_at': obj.created_at.isoformat(),
+            'completed_at': obj.completed_at.isoformat() if obj.completed_at else None,
+            'processing_time': obj.processing_time,
         }
-    
-    # Add output file info if completed
-    if conversion.status == 'completed' and conversion.output_file:
-        payload['output_file'] = {
-            'name': conversion.output_file.name.split('/')[-1],
-            'size': conversion.file_size_after,
-            'download_url': f'/api/v1/conversions/{conversion.id}/download/',
-            # Files expire after 24 hours
-            'expires_at': (timezone.now() + timedelta(hours=24)).isoformat(),
+        
+        # Add input file info
+        if obj.input_file:
+            payload['input_file'] = {
+                'name': obj.input_file.name.split('/')[-1],
+                'size': obj.file_size_before,
+            }
+        
+        # Add output file info if completed
+        if obj.status == 'completed' and obj.output_file:
+            payload['output_file'] = {
+                'name': obj.output_file.name.split('/')[-1],
+                'size': obj.file_size_after,
+                'download_url': f'/api/v1/conversions/{obj.id}/download/',
+                'expires_at': (timezone.now() + timedelta(hours=24)).isoformat(),
+            }
+        
+        # Add error info if failed
+        if obj.status == 'failed' and obj.error_message:
+            payload['error'] = {'message': obj.error_message}
+            
+        return payload
+
+    elif isinstance(obj, SignSession):
+        payload = {
+            'event': f'esign.{obj.status}',
+            'session_id': str(obj.id),
+            'status': obj.status,
+            'signer_email': obj.signer_email,
+            'signer_name': obj.signer_name,
+            'created_at': obj.created_at.isoformat(),
+            'signed_at': obj.signed_at.isoformat() if obj.signed_at else None,
         }
+
+        if obj.status == 'signed' and obj.signed_pdf:
+             payload['signed_file'] = {
+                'name': obj.original_filename, # Or signed filename
+                'download_url': f'/api/v1/esign/download/{obj.id}/',
+                'expires_at': obj.expires_at.isoformat()
+            }
+        
+        return payload
     
-    # Add error info if failed
-    if conversion.status == 'failed' and conversion.error_message:
-        payload['error'] = {
-            'message': conversion.error_message,
-        }
-    
-    return payload
+    return {}
 
 
-def trigger_webhook(conversion, merchant=None):
+def trigger_webhook(obj, merchant=None):
     """
-    Trigger webhook delivery for a conversion.
-    
-    Args:
-        conversion: ConversionHistory instance
-        merchant: APIMerchant instance (optional, will be fetched if not provided)
-    
-    Returns:
-        WebhookDelivery instance or None
+    Trigger webhook delivery for a conversion or sign session.
     """
+    from apps.tools.models import ConversionHistory
+    from apps.esign.models import SignSession
+
     # Get merchant if not provided
     if merchant is None:
-        # Try to get merchant from conversion user
-        if hasattr(conversion.user, 'api_merchant'):
-            merchant = conversion.user.api_merchant
+        if hasattr(obj.user, 'api_merchant'):
+            merchant = obj.user.api_merchant
         else:
-            logger.warning(f"No merchant found for conversion {conversion.id}")
+            logger.warning(f"No merchant found for object {obj.id}")
             return None
     
     # Check if webhooks are enabled
@@ -127,23 +124,29 @@ def trigger_webhook(conversion, merchant=None):
         return None
     
     # Create webhook payload
-    payload = create_webhook_payload(conversion)
+    payload = create_webhook_payload(obj)
     
     # Generate signature
     signature = generate_webhook_signature(payload, merchant.webhook_secret)
     
     # Create webhook delivery record
-    webhook = WebhookDelivery.objects.create(
-        merchant=merchant,
-        conversion=conversion,
-        webhook_url=merchant.webhook_url,
-        payload=payload,
-        signature=signature,
-        status='pending',
-    )
+    webhook_kwargs = {
+        'merchant': merchant,
+        'webhook_url': merchant.webhook_url,
+        'payload': payload,
+        'signature': signature,
+        'status': 'pending',
+    }
+
+    if isinstance(obj, ConversionHistory):
+        webhook_kwargs['conversion'] = obj
+    elif isinstance(obj, SignSession):
+        webhook_kwargs['sign_session'] = obj
+
+    webhook = WebhookDelivery.objects.create(**webhook_kwargs)
     
     logger.info(
-        f"Created webhook delivery #{webhook.id} for conversion {conversion.id} "
+        f"Created webhook delivery #{webhook.id} for object {obj.id} "
         f"to {merchant.company_name}"
     )
     
@@ -157,9 +160,6 @@ def trigger_webhook(conversion, merchant=None):
 def deliver_webhook(self, webhook_id):
     """
     Celery task to deliver webhook to merchant.
-    
-    Args:
-        webhook_id: WebhookDelivery ID
     """
     try:
         webhook = WebhookDelivery.objects.get(id=webhook_id)
@@ -193,7 +193,7 @@ def deliver_webhook(self, webhook_id):
         headers = {
             'Content-Type': 'application/json',
             'X-Webhook-Signature': webhook.signature,
-            'X-Webhook-Event': webhook.payload.get('event', 'conversion.completed'),
+            'X-Webhook-Event': webhook.payload.get('event', 'unknown'),
             'User-Agent': 'SmartToolPDF-Webhook/1.0',
         }
         
@@ -255,7 +255,6 @@ def deliver_webhook(self, webhook_id):
 def retry_failed_webhooks():
     """
     Celery task to retry failed webhooks that are due for retry.
-    Runs periodically to handle retries.
     """
     from django.db import models
     
@@ -286,13 +285,6 @@ def retry_failed_webhooks():
 def test_webhook(merchant, test_payload=None):
     """
     Send a test webhook to merchant's webhook URL.
-    
-    Args:
-        merchant: APIMerchant instance
-        test_payload: dict (optional) - Custom test payload
-    
-    Returns:
-        dict: Test result with status and details
     """
     if not merchant.webhook_url:
         return {

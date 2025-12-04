@@ -69,6 +69,7 @@ class Tool(models.Model):
         ('convert_image', 'Convert Image'),
         ('compress_video', 'Compress Video'),
         ('extract_text', 'Extract Text from PDF'),
+        ('esign', 'E-Sign PDF'),  # E-Sign functionality
     ]
 
     category = models.ForeignKey(

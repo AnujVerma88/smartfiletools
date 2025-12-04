@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - SmartFileTools{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 4rem 1rem;
+    }
+
+    .upload-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        padding: 3rem;
+        text-align: center;
+    }
+
+    .upload-icon {
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+
+    .upload-area {
+        border: 2px dashed var(--gray-300);
+        border-radius: var(--radius-md);
+        padding: 3rem;
+        background-color: var(--gray-100);
+        margin: 2rem 0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .upload-area:hover,
+    .upload-area.drag-over {
+        border-color: var(--primary-color);
+        background-color: rgba(20, 184, 166, 0.05);
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        text-align: left;
+        margin-top: 3rem;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: var(--gray-700);
+    }
+
+    .feature-item i {
+        color: var(--success);
+    }
+
+    .d-none {
+        display: none;
+    }
+
+    .mb-4 {
+        margin-bottom: 1.5rem;
+    }
+
+    .mb-3 {
+        margin-bottom: 1rem;
+    }
+
+    .mb-2 {
+        margin-bottom: 0.5rem;
+    }
+
+    .text-muted {
+        color: var(--gray-500);
+    }
+
+    .small {
+        font-size: 0.875rem;
+    }
+
+    /* Instructional Content */
+    .instructional-content {
+        margin-top: 4rem;
+    }
+
+    .format-info {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .format-box {
+        display: inline-flex;
+        align-items: center;
+        gap: 2rem;
+        padding: 1.5rem 2rem;
+        background: var(--white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .format-item {
+        text-align: center;
+    }
+
+    .format-item small {
+        display: block;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .format-item strong {
+        display: block;
+        color: var(--gray-900);
+        font-size: 1rem;
+    }
+
+    .format-divider {
+        width: 1px;
+        height: 40px;
+        background: var(--gray-200);
+    }
+
+    .how-to-section {
+        margin-bottom: 4rem;
+    }
+
+    .how-to-section h2 {
+        text-align: center;
+        margin-bottom: 3rem;
+        color: var(--gray-900);
+    }
+
+    .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .step-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        text-align: center;
+    }
+
+    .step-number {
+        width: 50px;
+        height: 50px;
+        background: var(--primary-color);
+        color: var(--white);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 auto 1.5rem;
+    }
+
+    .step-card h4 {
+        color: var(--gray-900);
+        margin-bottom: 1rem;
+        font-size: 1.125rem;
+    }
+
+    .step-card p {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .about-section {
+        background: var(--white);
+        padding: 3rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .about-section h3 {
+        color: var(--gray-900);
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+    }
+
+    .about-content {
+        color: var(--gray-700);
+        line-height: 1.8;
+        margin-bottom: 2rem;
+    }
+
+    .format-badges {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: var(--gray-100);
+        color: var(--gray-700);
+        border-radius: var(--radius-md);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .format-box {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .format-divider {
+            width: 100%;
+            height: 1px;
+        }
+
+        .steps-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="upload-container">
+        <div class="upload-card">
+            <div class="mb-4">
+                <div class="upload-icon">
+                    <i class="fas fa-file-signature fa-4x"></i>
+                </div>
+                <h1 class="h3 mb-2">{{ tool.name }}</h1>
+                <p class="text-muted">{{ tool.description }}</p>
+            </div>
+
+            <div class="upload-area" id="drop-zone">
+                <form method="post" enctype="multipart/form-data" id="upload-form">
+                    {% csrf_token %}
+                    <input type="file" name="file" id="file-input" class="d-none" accept=".pdf" required>
+
+                    <div class="mb-3">
+                        <i class="fas fa-cloud-upload-alt fa-3x" style="color: var(--gray-400);"></i>
+                    </div>
+                    <h5 class="mb-2">Drag & Drop your PDF here</h5>
+                    <p class="text-muted small mb-3">or</p>
+                    <button type="button" class="btn btn-primary px-4"
+                        onclick="document.getElementById('file-input').click()">
+                        Choose File
+                    </button>
+                    <p class="text-muted small mt-3 mb-0">Max file size: {{ tool.max_file_size_mb }}MB</p>
+                </form>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Secure OTP Verification</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Draw, Type, or Upload Signature</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Complete Audit Trail</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Tamper-proof PDF</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructional Content -->
+        <div class="instructional-content">
+            <!-- Supported Formats -->
+            <div class="format-info">
+                <div class="format-box">
+                    <div class="format-item">
+                        <small>Supported Formats</small>
+                        <strong>{{ tool.input_format }}</strong>
+                    </div>
+                    <div class="format-divider"></div>
+                    <div class="format-item">
+                        <small>Max File Size</small>
+                        <strong>{{ tool.max_file_size_mb }} MB</strong>
+                    </div>
+                    <div class="format-divider"></div>
+                    <div class="format-item">
+                        <small>Output</small>
+                        <strong>{{ tool.output_format }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How to Use -->
+            <div class="how-to-section">
+                <h2>How to Use {{ tool.name }}</h2>
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h4>{{ tool.step_1_title }}</h4>
+                        <p>{{ tool.step_1_description }}</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h4>{{ tool.step_2_title }}</h4>
+                        <p>{{ tool.step_2_description }}</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h4>{{ tool.step_3_title }}</h4>
+                        <p>{{ tool.step_3_description }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About -->
+            <div class="about-section">
+                <h3>About {{ tool.name }}</h3>
+                <div class="about-content">
+                    {{ tool.long_description|linebreaks }}
+                </div>
+                <div class="format-badges">
+                    <span class="badge">Input: {{ tool.input_format }}</span>
+                    <span class="badge">Output: {{ tool.output_format }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const form = document.getElementById('upload-form');
+
+    // Drag and drop handlers
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.classList.add('drag-over');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('drag-over');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+
+        if (files.length > 0) {
+            form.submit();
+        }
+    }
+
+    fileInput.addEventListener('change', function () {
+        if (this.files.length > 0) {
+            form.submit();
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

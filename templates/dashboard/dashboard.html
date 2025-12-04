@@ -89,9 +89,9 @@
                         <span class="info-label">Account Type:</span>
                         <span class="info-value">
                             {% if is_premium %}
-                                <span class="badge badge-premium">Premium</span>
+                            <span class="badge badge-premium">Premium</span>
                             {% else %}
-                                <span class="badge badge-free">Free</span>
+                            <span class="badge badge-free">Free</span>
                             {% endif %}
                         </span>
                     </div>
@@ -129,7 +129,7 @@
                 <h2>Recent Conversions</h2>
                 <a href="{% url 'tools:conversion_history' %}" class="view-all-link">View All</a>
             </div>
-            
+
             {% if recent_conversions %}
             <div class="conversions-table">
                 <table>
@@ -146,24 +146,42 @@
                         <tr>
                             <td>{{ conversion.get_tool_type_display }}</td>
                             <td>
-                                <span class="status-badge status-{{ conversion.status }}">
-                                    {{ conversion.status|title }}
+                                <span
+                                    class="status-badge status-{{ conversion.status_class|default:conversion.status }}">
+                                    {{ conversion.get_status_display|default:conversion.status|title }}
                                 </span>
                             </td>
                             <td>{{ conversion.created_at|date:"M d, Y H:i" }}</td>
                             <td>
+                                {% if conversion.is_esign %}
+                                {% if conversion.status == 'signed' %}
+                                <a href="{% url 'esign:download' session_id=conversion.id %}"
+                                    class="btn btn-sm btn-primary">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                                {% else %}
+                                <a href="{% url 'esign:status' session_id=conversion.id %}"
+                                    class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-eye"></i> View Status
+                                </a>
+                                {% endif %}
+                                {% else %}
                                 {% if conversion.status == 'completed' %}
-                                <a href="{% url 'tools:file_download' conversion_id=conversion.id %}" class="btn btn-sm btn-primary">
+                                <a href="{% url 'tools:file_download' conversion_id=conversion.id %}"
+                                    class="btn btn-sm btn-primary">
                                     <i class="fas fa-download"></i> Download
                                 </a>
                                 {% elif conversion.status == 'processing' or conversion.status == 'pending' %}
-                                <a href="{% url 'tools:conversion_status' conversion_id=conversion.id %}" class="btn btn-sm btn-secondary">
+                                <a href="{% url 'tools:conversion_status' conversion_id=conversion.id %}"
+                                    class="btn btn-sm btn-secondary">
                                     <i class="fas fa-eye"></i> View Status
                                 </a>
                                 {% else %}
-                                <a href="{% url 'tools:conversion_detail' conversion_id=conversion.id %}" class="btn btn-sm btn-outline">
+                                <a href="{% url 'tools:conversion_detail' conversion_id=conversion.id %}"
+                                    class="btn btn-sm btn-outline">
                                     <i class="fas fa-info-circle"></i> Details
                                 </a>
+                                {% endif %}
                                 {% endif %}
                             </td>
                         </tr>

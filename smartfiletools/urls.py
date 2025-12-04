@@ -34,6 +34,7 @@ urlpatterns = [
     path('tools/', include('apps.tools.urls')),  # File conversion tools
     path('ads/', include('apps.ads.urls')),  # Advertisement tracking
     path('api/', include('apps.api.urls')),  # RESTful API (v1)
+    path('esign/', include('apps.esign.urls')),  # E-Sign functionality
     
     # Favicon redirect (optional)
     path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'images/logo/favicon.ico', permanent=True)),

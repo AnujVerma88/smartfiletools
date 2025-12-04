@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'apps.dashboard',
     'apps.api',
     'apps.common',
+    'apps.esign',  # E-Sign functionality
 ]
 
 MIDDLEWARE = [
@@ -248,9 +249,10 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 
 # File Upload Settings
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
-MAX_UPLOAD_SIZE = 500 * 1024 * 1024  # 500MB for videos
+# Note: Files larger than FILE_UPLOAD_MAX_MEMORY_SIZE are written to disk temporarily
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB - files larger than this go to temp disk
+DATA_UPLOAD_MAX_MEMORY_SIZE = 110 * 1024 * 1024  # 110MB - maximum request size (slightly more than max upload)
+MAX_UPLOAD_SIZE = 100 * 1024 * 1024  # 100MB maximum upload size
 
 # File Storage Settings
 FILE_CLEANUP_AGE_HOURS = 24  # Delete files older than 24 hours
@@ -451,5 +453,23 @@ SITE_URL = config('SITE_URL', default='https://smarttoolpdf.com')
 
 # Usage Limits
 DAILY_CONVERSION_LIMIT_FREE = config('DAILY_CONVERSION_LIMIT_FREE', default=100, cast=int)
+
+# E-Sign Configuration
+ESIGN_MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+ESIGN_SESSION_EXPIRY_HOURS = 24
+ESIGN_OTP_EXPIRY_MINUTES = 5
+ESIGN_OTP_MAX_ATTEMPTS = 5
+ESIGN_OTP_RATE_LIMIT_PER_HOUR = 3
+ESIGN_RETENTION_DAYS = 90
+ESIGN_OTP_LENGTH = 6
+ESIGN_OTP_SUBJECT = 'Your Verification Code - SmartFileTools E-Sign'
+ESIGN_COMPLETION_SUBJECT = 'Document Signed Successfully - SmartFileTools E-Sign'
+
+# Signature fonts for typed signatures
+ESIGN_SIGNATURE_FONTS = [
+    'Brush Script MT',
+    'Lucida Handwriting',
+    'Segoe Script',
+]
 
 

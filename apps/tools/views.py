@@ -76,6 +76,16 @@ class ToolDetailView(DetailView):
         """Only show active tools."""
         return Tool.objects.filter(is_active=True).select_related('category')
     
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        
+        # Redirect E-Sign tool to its custom upload page
+        if self.object.tool_type == 'esign':
+            return redirect('esign:upload')
+            
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
+
     def get_context_data(self, **kwargs):
         """Add additional context data."""
         context = super().get_context_data(**kwargs)

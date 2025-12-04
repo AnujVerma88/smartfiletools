@@ -1,0 +1,177 @@
+<div class="api-section">
+    <h2>🔔 Webhook Notifications</h2>
+    <p>Configure webhooks to receive real-time notifications when events occur in your API integrations.</p>
+
+    <h3>Configuring Webhooks</h3>
+    <p>To set up webhooks:</p>
+    <ol>
+        <li>Log in to your <a href="{% url 'api:merchant_dashboard' %}"
+                style="color: #14B8A6; font-weight: 600;">Merchant Dashboard</a></li>
+        <li>Navigate to <strong>Webhooks</strong> section</li>
+        <li>Enter your webhook URL</li>
+        <li>Save your webhook secret for signature verification</li>
+        <li>Enable webhooks</li>
+    </ol>
+
+    <h3>Supported Events</h3>
+    <table class="param-table">
+        <thead>
+            <tr>
+                <th>Event</th>
+                <th>Description</th>
+                <th>When Triggered</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>esign.signed</code></td>
+                <td>Document signed successfully</td>
+                <td>When a signer completes the signing process</td>
+            </tr>
+            <tr>
+                <td><code>esign.expired</code></td>
+                <td>Session expired</td>
+                <td>When a signing session expires without completion</td>
+            </tr>
+            <tr>
+                <td><code>conversion.completed</code></td>
+                <td>File conversion completed</td>
+                <td>When a conversion finishes successfully (Coming Soon)</td>
+            </tr>
+            <tr>
+                <td><code>conversion.failed</code></td>
+                <td>File conversion failed</td>
+                <td>When a conversion encounters an error (Coming Soon)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Webhook Payload Structure</h3>
+    <p>Example payload for <code>esign.signed</code> event:</p>
+    <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre>{
+  "event": "esign.signed",
+  "session_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "status": "signed",
+  "signer_email": "john.doe@example.com",
+  "signer_name": "John Doe",
+  "created_at": "2025-12-04T10:00:00Z",
+  "signed_at": "2025-12-04T10:15:30Z",
+  "signed_file": {
+    "name": "contract.pdf",
+    "download_url": "/api/v1/esign/download/a1b2c3d4-.../",
+    "expires_at": "2025-12-05T10:00:00Z"
+  }
+}</pre>
+    </div>
+
+    <h3>Webhook Headers</h3>
+    <p>Every webhook request includes these headers:</p>
+    <div class="code-block">
+        <pre>Content-Type: application/json
+X-Webhook-Signature: <HMAC-SHA256 signature>
+X-Webhook-Event: esign.signed
+User-Agent: SmartToolPDF-Webhook/1.0</pre>
+    </div>
+
+    <h3>Verifying Webhook Signatures</h3>
+    <p><strong>Important:</strong> Always verify the webhook signature to ensure the request is authentic and hasn't
+        been tampered with.</p>
+
+    <h4>Python Example</h4>
+    <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre>import hmac
+import hashlib
+import json
+
+def verify_webhook(payload, signature, secret):
+    """Verify webhook signature using HMAC-SHA256"""
+    message = json.dumps(payload, sort_keys=True).encode('utf-8')
+    expected = hmac.new(
+        secret.encode('utf-8'),
+        message,
+        hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(signature, expected)
+
+# In your webhook handler:
+@app.route('/webhook', methods=['POST'])
+def handle_webhook():
+    webhook_secret = "your_webhook_secret"
+    signature = request.headers.get('X-Webhook-Signature')
+    payload = request.json
+    
+    if not verify_webhook(payload, signature, webhook_secret):
+        return "Invalid signature", 401
+    
+    # Process the webhook
+    event = payload.get('event')
+    
+    if event == 'esign.signed':
+        session_id = payload['session_id']
+        # Download the signed PDF, update your database, etc.
+        print(f"Document signed: {session_id}")
+    
+    return "OK", 200</pre>
+    </div>
+
+    <h4>Node.js Example</h4>
+    <div class="code-block">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre>const crypto = require('crypto');
+
+function verifyWebhook(payload, signature, secret) {
+    const message = JSON.stringify(payload, Object.keys(payload).sort());
+    const expected = crypto
+        .createHmac('sha256', secret)
+        .update(message)
+        .digest('hex');
+    return crypto.timingSafeEqual(
+        Buffer.from(signature),
+        Buffer.from(expected)
+    );
+}
+
+app.post('/webhook', (req, res) => {
+    const webhookSecret = 'your_webhook_secret';
+    const signature = req.headers['x-webhook-signature'];
+    const payload = req.body;
+    
+    if (!verifyWebhook(payload, signature, webhookSecret)) {
+        return res.status(401).send('Invalid signature');
+    }
+    
+    // Process the webhook
+    const event = payload.event;
+    
+    if (event === 'esign.signed') {
+        console.log(`Document signed: ${payload.session_id}`);
+        // Download PDF, update database, etc.
+    }
+    
+    res.status(200).send('OK');
+});</pre>
+    </div>
+
+    <h3>Best Practices</h3>
+    <ul>
+        <li><strong>Always verify signatures:</strong> Never trust webhook data without verifying the signature</li>
+        <li><strong>Use HTTPS:</strong> Your webhook endpoint must use HTTPS in production</li>
+        <li><strong>Respond quickly:</strong> Return a 200 status code within 5 seconds</li>
+        <li><strong>Handle retries:</strong> We'll retry failed webhooks up to 3 times with exponential backoff</li>
+        <li><strong>Be idempotent:</strong> Handle duplicate webhook deliveries gracefully</li>
+        <li><strong>Log everything:</strong> Keep logs of all webhook deliveries for debugging</li>
+    </ul>
+
+    <h3>Retry Policy</h3>
+    <p>If your webhook endpoint fails to respond or returns an error:</p>
+    <ul>
+        <li><strong>Attempt 1:</strong> Immediate delivery</li>
+        <li><strong>Attempt 2:</strong> 2 minutes after first failure</li>
+        <li><strong>Attempt 3:</strong> 4 minutes after second failure</li>
+        <li><strong>Attempt 4:</strong> 8 minutes after third failure</li>
+    </ul>
+    <p>After 4 failed attempts, the webhook delivery is marked as failed and no further retries are attempted.</p>
+</div>

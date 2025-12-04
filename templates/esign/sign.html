@@ -1,0 +1,748 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sign Document - SmartFileTools{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Layout */
+    .sign-container {
+        display: flex;
+        height: calc(100vh - 80px);
+        overflow: hidden;
+    }
+
+    .sidebar {
+        width: 300px;
+        background: var(--white);
+        border-right: 1px solid var(--gray-200);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        z-index: 10;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .main-area {
+        flex: 1;
+        background-color: var(--gray-100);
+        padding: 2rem;
+        overflow-y: auto;
+        position: relative;
+        text-align: center;
+    }
+
+    /* PDF Pages */
+    .pdf-page {
+        position: relative;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-md);
+        display: inline-block;
+        background: white;
+    }
+
+    .pdf-page img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Signature Element */
+    .signature-element {
+        position: absolute;
+        border: 2px dashed var(--primary-color);
+        background-color: rgba(20, 184, 166, 0.1);
+        cursor: move;
+        z-index: 100;
+        min-width: 100px;
+        min-height: 40px;
+    }
+
+    .signature-element img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+    }
+
+    .signature-element .remove-btn {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: var(--danger);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        text-align: center;
+        line-height: 20px;
+        font-size: 12px;
+        cursor: pointer;
+        display: none;
+    }
+
+    .signature-element:hover .remove-btn {
+        display: block;
+    }
+
+    .signature-element.selected {
+        border: 2px solid var(--primary-color);
+    }
+
+    /* Custom Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        width: 90%;
+        max-width: 600px;
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--gray-500);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--gray-200);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+
+    /* Tabs */
+    .tabs {
+        display: flex;
+        border-bottom: 1px solid var(--gray-200);
+        margin-bottom: 1.5rem;
+    }
+
+    .tab-btn {
+        padding: 0.75rem 1.5rem;
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--gray-600);
+    }
+
+    .tab-btn.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* Canvas */
+    #signatureCanvas {
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        cursor: crosshair;
+        touch-action: none;
+        width: 100%;
+        background: white;
+    }
+
+    /* Font Preview */
+    .font-preview {
+        font-size: 24px;
+        padding: 10px;
+        border: 1px solid var(--gray-200);
+        margin-bottom: 10px;
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+    }
+
+    .font-preview:hover,
+    .font-preview.active {
+        background-color: var(--gray-100);
+        border-color: var(--primary-color);
+    }
+
+    /* Utilities */
+    .mb-4 {
+        margin-bottom: 1.5rem;
+    }
+
+    .mb-3 {
+        margin-bottom: 1rem;
+    }
+
+    .d-grid {
+        display: grid;
+        gap: 0.5rem;
+    }
+
+    .w-100 {
+        width: 100%;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        margin-bottom: 1rem;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+    }
+
+    .alert-info {
+        background-color: rgba(59, 130, 246, 0.1);
+        color: var(--info);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sign-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3 class="mb-4">Sign Document</h3>
+
+        <div class="d-grid mb-4">
+            <button class="btn btn-primary w-100" onclick="openModal()">
+                <i class="fas fa-pen-nib me-2"></i> Add Signature
+            </button>
+        </div>
+
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-1"></i>
+            Click "Add Signature" to create your signature, then drag it onto the document pages.
+        </div>
+
+        <div style="margin-top: auto;">
+            <button id="finishBtn" class="btn btn-success w-100"
+                style="background-color: var(--success); color: white;">
+                <i class="fas fa-check me-2"></i> Finish & Sign
+            </button>
+        </div>
+    </div>
+
+    <!-- PDF Viewer -->
+    <div class="main-area" id="pdfContainer">
+        {% for page in pages %}
+        <div class="pdf-page" id="page-{{ page.number }}" data-page="{{ page.number }}">
+            <img src="{{ page.url }}" alt="Page {{ page.number }}">
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Signature Modal -->
+<div class="modal-overlay" id="signatureModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Create Signature</h5>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('draw')">Draw</button>
+                <button class="tab-btn" onclick="switchTab('type')">Type</button>
+                <button class="tab-btn" onclick="switchTab('upload')">Upload</button>
+            </div>
+
+            <!-- Draw Tab -->
+            <div id="draw-tab" class="tab-content active">
+                <div style="text-align: center;">
+                    <canvas id="signatureCanvas" width="500" height="200"></canvas>
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-secondary btn-sm" onclick="clearCanvas()">Clear</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Type Tab -->
+            <div id="type-tab" class="tab-content">
+                <div class="mb-3">
+                    <label style="display:block; margin-bottom:0.5rem;">Type your name</label>
+                    <input type="text" class="form-control" id="typedName" placeholder="John Doe">
+                </div>
+                <div class="mb-3">
+                    <label style="display:block; margin-bottom:0.5rem;">Select Font</label>
+                    <div id="fontList" style="max-height: 200px; overflow-y: auto;">
+                        {% for font in fonts %}
+                        <div class="font-preview" data-font="{{ font }}" style="font-family: '{{ font }}', cursive;">
+                            Signature Preview
+                        </div>
+                        {% endfor %}
+                        <div class="font-preview active" data-font="default" style="font-family: cursive;">
+                            Signature Preview
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Tab -->
+            <div id="upload-tab" class="tab-content">
+                <div class="mb-3">
+                    <label style="display:block; margin-bottom:0.5rem;">Upload Signature Image</label>
+                    <input type="file" class="form-control" id="uploadInput" accept="image/*">
+                </div>
+            </div>
+        </div>
+
+        <!-- Placement Options -->
+        <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--gray-200);">
+            <label style="display: block; margin-bottom: 0.75rem; font-weight: 600;">Signature Placement:</label>
+            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="radio" name="placement" value="manual" checked style="margin-right: 0.5rem;">
+                    <span>Manual (Drag & Drop)</span>
+                </label>
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="radio" name="placement" value="first" style="margin-right: 0.5rem;">
+                    <span>First Page Only</span>
+                </label>
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="radio" name="placement" value="last" style="margin-right: 0.5rem;">
+                    <span>Last Page Only</span>
+                </label>
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="radio" name="placement" value="all" style="margin-right: 0.5rem;">
+                    <span>All Pages</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveSignature()">Create Signature</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const sessionId = "{{ session.id }}";
+    const csrfToken = "{{ csrf_token }}";
+    let activeTab = 'draw';
+    let lastSignatureId = null;
+
+    // Modal functions
+    function openModal() {
+        document.getElementById('signatureModal').classList.add('active');
+        resizeCanvas();
+    }
+
+    function closeModal() {
+        document.getElementById('signatureModal').classList.remove('active');
+    }
+
+    // Tab functions
+    function switchTab(tabName) {
+        activeTab = tabName;
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.getElementById(tabName + '-tab').classList.add('active');
+
+        if (tabName === 'draw') {
+            resizeCanvas();
+        }
+    }
+
+    // Canvas setup
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = 200;
+
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+    }
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        if (e.touches) {
+            return {
+                x: e.touches[0].clientX - rect.left,
+                y: e.touches[0].clientY - rect.top
+            };
+        }
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+
+    function startDrawing(e) {
+        isDrawing = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        e.preventDefault();
+    }
+
+    function stopDrawing() {
+        isDrawing = false;
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDrawing);
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Font selection
+    document.querySelectorAll('.font-preview').forEach(el => {
+        el.addEventListener('click', function () {
+            document.querySelectorAll('.font-preview').forEach(e => e.classList.remove('active'));
+            this.classList.add('active');
+            updatePreviews(document.getElementById('typedName').value);
+        });
+    });
+
+    document.getElementById('typedName').addEventListener('input', function (e) {
+        updatePreviews(e.target.value);
+    });
+
+    function updatePreviews(text) {
+        const display = text || 'Signature Preview';
+        document.querySelectorAll('.font-preview').forEach(el => {
+            el.textContent = display;
+        });
+    }
+
+    // Save Signature
+    async function saveSignature() {
+        let payload = {};
+        let isFile = false;
+
+        if (activeTab === 'draw') {
+            payload = {
+                method: 'draw',
+                signature_data: canvas.toDataURL('image/png')
+            };
+        } else if (activeTab === 'type') {
+            const text = document.getElementById('typedName').value;
+            if (!text) {
+                alert('Please type your name');
+                return;
+            }
+            const font = document.querySelector('.font-preview.active').dataset.font;
+            payload = {
+                method: 'type',
+                text: text,
+                font: font
+            };
+        } else if (activeTab === 'upload') {
+            const fileInput = document.getElementById('uploadInput');
+            if (fileInput.files.length === 0) {
+                alert('Please select a file');
+                return;
+            }
+            isFile = true;
+            payload = new FormData();
+            payload.append('signature_file', fileInput.files[0]);
+        }
+
+        // Get placement preference
+        const placement = document.querySelector('input[name="placement"]:checked').value;
+
+        try {
+            let response;
+            if (isFile) {
+                response = await fetch(`/esign/sign/${sessionId}/signature/save/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: payload
+                });
+            } else {
+                response = await fetch(`/esign/sign/${sessionId}/signature/save/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify(payload)
+                });
+            }
+
+            const result = await response.json();
+            if (result.success) {
+                addSignatureToPage(result.signature_id, result.signature_url, placement);
+                closeModal();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Failed to save signature');
+        }
+    }
+
+    function addSignatureToPage(id, url, placement = 'manual') {
+        // Track the last created signature
+        lastSignatureId = id;
+
+        const page = document.querySelector('.pdf-page');
+        if (!page) return;
+
+        const el = document.createElement('div');
+        el.className = 'signature-element';
+        el.dataset.id = id;
+        el.dataset.placement = placement; // Store placement preference
+        el.style.left = '100px';
+        el.style.top = '100px';
+        el.style.width = '200px';
+        el.style.height = '80px';
+
+        // Visual indicator for placement mode
+        let badge = '';
+        if (placement === 'all') badge = '<span style="position:absolute; bottom:-20px; left:0; background:#333; color:white; font-size:10px; padding:2px 4px; border-radius:3px;">All Pages</span>';
+        else if (placement === 'first') badge = '<span style="position:absolute; bottom:-20px; left:0; background:#333; color:white; font-size:10px; padding:2px 4px; border-radius:3px;">First Page</span>';
+        else if (placement === 'last') badge = '<span style="position:absolute; bottom:-20px; left:0; background:#333; color:white; font-size:10px; padding:2px 4px; border-radius:3px;">Last Page</span>';
+
+        el.innerHTML = `
+            <img src="${url}" draggable="false">
+            <div class="remove-btn" onclick="this.parentElement.remove()">×</div>
+            ${badge}
+        `;
+
+        page.appendChild(el);
+        makeDraggable(el);
+    }
+
+    // Drag and Drop Logic
+    function makeDraggable(el) {
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+
+        el.addEventListener('mousedown', function (e) {
+            if (e.target.classList.contains('remove-btn')) return;
+
+            isDragging = true;
+            el.classList.add('selected');
+
+            startX = e.clientX;
+            startY = e.clientY;
+            initialLeft = el.offsetLeft;
+            initialTop = el.offsetTop;
+
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', function (e) {
+            if (!isDragging) return;
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            el.style.left = `${initialLeft + dx}px`;
+            el.style.top = `${initialTop + dy}px`;
+        });
+
+        document.addEventListener('mouseup', function () {
+            isDragging = false;
+        });
+    }
+
+    // Finish & Sign
+    document.getElementById('finishBtn').addEventListener('click', async function () {
+        const signatures = document.querySelectorAll('.signature-element');
+        let placements = [];
+        let signAllPages = false;
+
+        if (signatures.length === 0) {
+            alert('Please create a signature first');
+            return;
+        }
+
+        // Process each signature based on its placement mode
+        signatures.forEach(el => {
+            const placementMode = el.dataset.placement || 'manual';
+            const page = el.closest('.pdf-page');
+            const pageNum = parseInt(page.dataset.page); // This is the page where it was placed (usually page 1)
+
+            const pageImg = page.querySelector('img');
+            const scaleX = pageImg.naturalWidth / pageImg.clientWidth;
+            const scaleY = pageImg.naturalHeight / pageImg.clientHeight;
+
+            const x = el.offsetLeft * scaleX;
+            const y = el.offsetTop * scaleY;
+            const width = el.offsetWidth * scaleX;
+            const height = el.offsetHeight * scaleY;
+
+            if (placementMode === 'all') {
+                // Replicate to ALL pages
+                const allPages = document.querySelectorAll('.pdf-page');
+                allPages.forEach(p => {
+                    placements.push({
+                        signature_id: el.dataset.id,
+                        page: parseInt(p.dataset.page),
+                        x: x,
+                        y: y,
+                        width: width,
+                        height: height
+                    });
+                });
+            } else if (placementMode === 'first') {
+                // Only on first page
+                placements.push({
+                    signature_id: el.dataset.id,
+                    page: 1,
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: height
+                });
+            } else if (placementMode === 'last') {
+                // Only on last page
+                const allPages = document.querySelectorAll('.pdf-page');
+                const lastPageNum = parseInt(allPages[allPages.length - 1].dataset.page);
+                placements.push({
+                    signature_id: el.dataset.id,
+                    page: lastPageNum,
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: height
+                });
+            } else {
+                // Manual - use the actual page it's on
+                placements.push({
+                    signature_id: el.dataset.id,
+                    page: pageNum,
+                    x: x,
+                    y: y,
+                    width: width,
+                    height: height
+                });
+            }
+        });
+
+        try {
+            const payload = {
+                placements: placements,
+                signature_id: lastSignatureId,
+                sign_all_pages: false // We handle "all pages" via explicit placements now
+            };
+
+            const response = await fetch(`/esign/sign/${sessionId}/complete/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                showSuccessModal();
+            } else {
+                alert('Error: ' + result.message);
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Failed to complete signing');
+        }
+    });
+
+    // Success Modal
+    function showSuccessModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay active';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <div class="modal-body" style="padding: 3rem 2rem;">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 1.5rem; background: rgba(16, 185, 129, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--success);"></i>
+                    </div>
+                    <h3 style="margin-bottom: 1rem;">Document Signed Successfully!</h3>
+                    <p style="color: var(--gray-600); margin-bottom: 2rem;">
+                        Your document is being processed. You'll be redirected to the download page.
+                    </p>
+                    <button class="btn btn-primary" onclick="window.location.href='/esign/status/${sessionId}/'">
+                        View Status
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        setTimeout(() => {
+            window.location.href = `/esign/status/${sessionId}/`;
+        }, 2000);
+    }
+</script>
+{% endblock %}
