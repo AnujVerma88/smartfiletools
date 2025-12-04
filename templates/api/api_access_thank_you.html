@@ -81,7 +81,7 @@
                 <a href="/" class="btn btn-primary">
                     Return to Home
                 </a>
-                <a href="/api/docs/" class="btn btn-secondary">
+                <a href="{% url 'api:api_documentation' %}" class="btn btn-secondary">
                     Browse API Documentation
                 </a>
             </div>
@@ -98,7 +98,7 @@
                         </div>
                         <h4>Read the Docs</h4>
                         <p>Familiarize yourself with our API endpoints and capabilities.</p>
-                        <a href="/api/docs/">View Documentation →</a>
+                        <a href="{% url 'api:api_documentation' %}">View Documentation →</a>
                     </div>
 
                     <div class="info-item">
@@ -109,7 +109,7 @@
                         </div>
                         <h4>Code Examples</h4>
                         <p>Check out sample code in Python, JavaScript, PHP, and more.</p>
-                        <a href="/api/docs/examples/">View Examples →</a>
+                        <a href="{% url 'api:api_documentation' %}">View Examples →</a>
                     </div>
 
                     <div class="info-item">
