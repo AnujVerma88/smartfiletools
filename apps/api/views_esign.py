@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse
 from django.conf import settings
@@ -21,17 +22,20 @@ class ESignCreateSessionView(APIView):
     Create a new E-Sign session.
     POST /api/v1/esign/create/
     """
+    authentication_classes = [] # Disable DRF auth to rely on middleware
+    permission_classes = [AllowAny]
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request):
         # Ensure request is authenticated via API Key
-        if not hasattr(request, 'merchant') or not request.merchant:
+        # Middleware attaches api_merchant, not merchant
+        if not hasattr(request, 'api_merchant') or not request.api_merchant:
             return Response(
                 {'success': False, 'error': 'Authentication required'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        merchant = request.merchant
+        merchant = request.api_merchant
         
         # Check quota
         if not merchant.has_quota_remaining():
@@ -39,14 +43,38 @@ class ESignCreateSessionView(APIView):
                 {'success': False, 'error': 'Monthly request quota exceeded'},
                 status=status.HTTP_429_TOO_MANY_REQUESTS
             )
+            
+        print("-" * 50)
+        print("DEBUG REQUEST DATA")
+        print(f"Content-Type: {request.META.get('CONTENT_TYPE')}")
+        print(f"Files Keys: {list(request.FILES.keys())}")
+        print(f"Data Keys: {list(request.data.keys())}")
+        print(f"POST Keys: {list(request.POST.keys())}")
+        print("-" * 50)
+        
+        logger.info(f"ESign Create Request - Data Keys: {list(request.data.keys())}")
+        logger.info(f"ESign Create Request - Files Keys: {list(request.FILES.keys())}")
 
         file_obj = request.FILES.get('file')
-        signer_email = request.data.get('signer_email')
-        signer_name = request.data.get('signer_name')
+        signer_email = request.data.get('signer_email') or request.POST.get('signer_email')
+        signer_name = request.data.get('signer_name') or request.POST.get('signer_name')
 
         if not file_obj or not signer_email or not signer_name:
+            received_info = {
+                'files_received': list(request.FILES.keys()),
+                'data_received': list(request.data.keys()),
+                'post_received': list(request.POST.keys()),
+                'content_type': request.META.get('CONTENT_TYPE'),
+                'file_obj_found': bool(file_obj),
+                'signer_email_found': bool(signer_email),
+                'signer_name_found': bool(signer_name)
+            }
             return Response(
-                {'success': False, 'error': 'Missing required fields: file, signer_email, signer_name'},
+                {
+                    'success': False, 
+                    'error': 'Missing required fields: file, signer_email, signer_name',
+                    'debug_info': received_info
+                },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -55,9 +83,14 @@ class ESignCreateSessionView(APIView):
                 {'success': False, 'error': 'Only PDF files are allowed'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+        # DEBUG: Check if body was consumed
+        print(f"DEBUG: Body consumed? {getattr(request, '_read_started', False)}")
+        print(f"DEBUG: Content Length: {request.META.get('CONTENT_LENGTH')}")
 
         try:
             # Create Session
+            logger.info(f"Creating session for {merchant.company_name} (User ID: {merchant.user.id})")
             session = SignSession.objects.create(
                 user=merchant.user, # Link to merchant's user account
                 signer_email=signer_email,
@@ -67,8 +100,9 @@ class ESignCreateSessionView(APIView):
                 original_file_size=file_obj.size,
                 expires_at=timezone.now() + timedelta(hours=settings.ESIGN_SESSION_EXPIRY_HOURS),
                 status='created',
-                metadata={'source': 'api', 'merchant_id': merchant.id}
+                metadata={'source': 'api', 'merchant_id': str(merchant.id)}
             )
+            logger.info(f"Session created: {session.id}")
 
             # Create Audit Event
             AuditEvent.objects.create(
@@ -88,30 +122,21 @@ class ESignCreateSessionView(APIView):
                 expires_at=timezone.now() + timedelta(minutes=settings.ESIGN_OTP_EXPIRY_MINUTES)
             )
             
+            logger.info("Sending OTP email...")
             email_sent = send_otp_email(session, otp_code)
             if email_sent:
                 session.status = 'otp_sent'
                 session.save()
+            logger.info(f"OTP email sent: {email_sent}")
 
-            # Log API Usage
-            merchant.increment_usage()
-            APIUsageLog.objects.create(
-                merchant=merchant,
-                api_key=request.api_key,
-                endpoint=request.path,
-                method=request.method,
-                status_code=201,
-                ip_address=request.META.get('REMOTE_ADDR'),
-                user_agent=request.META.get('HTTP_USER_AGENT', ''),
-                request_size=file_obj.size,
-                tool_type='esign'
-            )
+            # Log API Usage - Handled by Middleware
+            logger.info("Session created successfully")
 
             return Response({
                 'success': True,
                 'session_id': session.id,
                 'status': session.status,
-                'signing_url': f"{settings.SITE_URL}/esign/sign/{session.id}/",
+                'signing_url': request.build_absolute_uri(f"/esign/sign/{session.id}/"),
                 'message': 'Session created and OTP sent' if email_sent else 'Session created but OTP email failed'
             }, status=status.HTTP_201_CREATED)
 
@@ -127,14 +152,17 @@ class ESignStatusView(APIView):
     Get status of an E-Sign session.
     GET /api/v1/esign/status/<session_id>/
     """
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
     def get(self, request, session_id):
-        if not hasattr(request, 'merchant') or not request.merchant:
+        if not hasattr(request, 'api_merchant') or not request.api_merchant:
             return Response({'success': False, 'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
 
         session = get_object_or_404(SignSession, id=session_id)
 
         # Security: Ensure merchant owns this session
-        if session.user != request.merchant.user:
+        if session.user != request.api_merchant.user:
              return Response({'success': False, 'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
 
         return Response({
@@ -151,13 +179,16 @@ class ESignDownloadView(APIView):
     Download signed PDF.
     GET /api/v1/esign/download/<session_id>/
     """
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
     def get(self, request, session_id):
-        if not hasattr(request, 'merchant') or not request.merchant:
+        if not hasattr(request, 'api_merchant') or not request.api_merchant:
             return Response({'success': False, 'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
 
         session = get_object_or_404(SignSession, id=session_id)
 
-        if session.user != request.merchant.user:
+        if session.user != request.api_merchant.user:
              return Response({'success': False, 'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
 
         if not session.signed_pdf:
@@ -165,7 +196,7 @@ class ESignDownloadView(APIView):
 
         # Log API Usage (Download)
         APIUsageLog.objects.create(
-            merchant=request.merchant,
+            merchant=request.api_merchant,
             api_key=request.api_key,
             endpoint=request.path,
             method=request.method,

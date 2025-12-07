@@ -199,9 +199,9 @@ CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes
 
 # Run Celery tasks synchronously in development when Redis is not available
 # DISABLED: This causes database transaction issues where status doesn't update
-# if DEBUG:
-#     CELERY_TASK_ALWAYS_EAGER = True
-#     CELERY_TASK_EAGER_PROPAGATES = True
+if DEBUG:
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
 
 # Redis Configuration
 REDIS_HOST = config('REDIS_HOST', default='127.0.0.1')

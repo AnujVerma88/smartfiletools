@@ -238,9 +238,15 @@ class APIKeyAuthenticationMiddleware:
             response['X-RateLimit-Remaining'] = str(
                 max(0, merchant.monthly_request_limit - merchant.current_month_usage)
             )
-            response['X-RateLimit-Reset'] = str(
-                int(timezone.now().replace(day=1, hour=0, minute=0, second=0).timestamp())
-            )
+            
+            # Calculate reset time (1st of next month)
+            now = timezone.now()
+            if now.month == 12:
+                next_month = now.replace(year=now.year + 1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+            else:
+                next_month = now.replace(month=now.month + 1, day=1, hour=0, minute=0, second=0, microsecond=0)
+            
+            response['X-RateLimit-Reset'] = str(int(next_month.timestamp()))
         except Exception as e:
             logger.error(f"Failed to add rate limit headers: {str(e)}")
         
@@ -285,13 +291,19 @@ class APIUsageLoggingMiddleware:
         start_time = time.time()
         
         # Get request size
-        request_size = len(request.body) if request.body else 0
+        request_size = 0
+        try:
+            content_length = request.META.get('CONTENT_LENGTH')
+            if content_length:
+                request_size = int(content_length)
+        except (ValueError, TypeError):
+            request_size = 0
         
         # Process request
         response = self.get_response(request)
         
         # Calculate response time
-        response_time = time.time() - start_time
+        response_time = float(time.time() - start_time)
         
         # Get response size
         response_size = len(response.content) if hasattr(response, 'content') else 0
@@ -340,14 +352,19 @@ class APIUsageLoggingMiddleware:
                 cost = calculate_usage_cost(merchant.plan, 1)
             
             # Determine tool type from endpoint
-            tool_type = None
+            tool_type = ''
             if '/convert/' in request.path:
                 # Extract tool type from path like /api/v1/convert/pdf-to-docx/
-                parts = request.path.split('/')
+                parts = request.path.strip('/').split('/')
                 if 'convert' in parts:
-                    idx = parts.index('convert')
-                    if idx + 1 < len(parts):
-                        tool_type = parts[idx + 1].replace('-', '_')
+                    try:
+                        idx = parts.index('convert')
+                        if idx + 1 < len(parts):
+                            tool_type = parts[idx + 1].replace('-', '_')
+                    except ValueError:
+                        pass
+            elif '/esign/' in request.path:
+                tool_type = 'esign'
             
             # Try to link to conversion if available
             conversion_id = None
@@ -385,7 +402,7 @@ class APIUsageLoggingMiddleware:
                 conversion_id=conversion_id,
                 billable=billable,
                 cost=cost,
-                error_message=error_message,
+                error_message=error_message or '',
             )
             
             # Increment merchant usage counter (only for successful billable requests)
@@ -393,10 +410,11 @@ class APIUsageLoggingMiddleware:
                 merchant.increment_usage()
             
             logger.info(
-                f"API request logged: {merchant.company_name} - {request.method} {request.path} - "
-                f"{response.status_code} - {response_time:.3f}s"
+                f"API Request Logged for Merchant: {merchant.company_name} (ID: {merchant.id}) - "
+                f"{request.method} {request.path} - Status: {response.status_code} - "
+                f"Tool: {tool_type or 'General'} - Time: {response_time:.3f}s"
             )
             
         except Exception as e:
-            logger = logging.getLogger('apps.api')
-            logger.error(f"Failed to log API request: {str(e)}", exc_info=True)
+            error_logger = logging.getLogger('apps.api')
+            error_logger.error(f"Failed to log API request: {str(e)}", exc_info=True)

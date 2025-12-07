@@ -91,7 +91,8 @@ class RequestLoggingMiddleware(MiddlewareMixin):
         if request.method in ['POST', 'PUT', 'PATCH']:
             try:
                 # Don't log file uploads or very large bodies
-                if request.content_type and 'multipart' in request.content_type:
+                content_type = request.META.get('CONTENT_TYPE', '')
+                if 'multipart' in content_type:
                     return '[File Upload]'
                 
                 body = request.body.decode('utf-8', errors='ignore')

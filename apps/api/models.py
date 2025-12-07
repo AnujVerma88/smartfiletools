@@ -440,7 +440,17 @@ class WebhookDelivery(models.Model):
         'tools.ConversionHistory',
         on_delete=models.CASCADE,
         related_name='webhook_deliveries',
-        help_text='Associated conversion'
+        help_text='Associated conversion',
+        null=True,
+        blank=True
+    )
+    sign_session = models.ForeignKey(
+        'esign.SignSession',
+        on_delete=models.CASCADE,
+        related_name='webhook_deliveries',
+        help_text='Associated e-sign session',
+        null=True,
+        blank=True
     )
     
     # Webhook details

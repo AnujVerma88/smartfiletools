@@ -122,7 +122,77 @@ def place_fields(request, session_id):
     return render(request, 'esign/place_fields.html', {'session': session})
 
 
-@login_required
+def sign_document(request, session_id):
+    """Public signing page"""
+    session = get_object_or_404(SignSession, id=session_id)
+    
+    # Permission Check:
+    # 1. If user is authenticated and matches session owner, they can access (self-signing)
+    # 2. If session is OTP verified, anyone with the link can access (external signer who passed OTP)
+    
+    is_owner = request.user.is_authenticated and session.user == request.user
+    
+    # Check if already signed
+    if session.status == 'signed':
+        # Determine which template to use (API vs External)
+        use_external_template = (session.metadata.get('source') == 'api') or (not is_owner)
+        if use_external_template:
+            # For external usage, show a clean "Already Signed" message
+             # Create a simple view for this or redirect to a status page with a flag
+             # For now, let's use the status page but ensure it has an external mode
+             return redirect('esign:status', session_id=session.id)
+        else:
+            return redirect('esign:status', session_id=session.id)
+            
+    is_verified = session.status in ['otp_verified', 'signing']
+    
+    if not is_owner and not is_verified:
+        # If not owner and not verified, force OTP flow
+        return redirect('esign:verify_otp_page', session_id=session.id)
+        
+    # Generate thumbnails if needed
+    from .utils.pdf_processor import PDFProcessor
+    from django.conf import settings
+    import os
+    
+    thumbnails_dir = os.path.join(settings.MEDIA_ROOT, 'esign', 'thumbnails', str(session.id))
+    # Use forward slashes for URLs
+    thumbnails_url = f"{settings.MEDIA_URL}esign/thumbnails/{session.id}/"
+    
+    if not os.path.exists(thumbnails_dir):
+        try:
+            processor = PDFProcessor(file_path=session.original_pdf.path)
+            thumbnails = processor.generate_thumbnails(thumbnails_dir)
+            processor.close()
+        except Exception as e:
+            messages.error(request, f"Error processing PDF: {str(e)}")
+            return redirect('dashboard:home')
+    else:
+        # List existing thumbnails
+        thumbnails = sorted([f for f in os.listdir(thumbnails_dir) if f.endswith('.png')], 
+                          key=lambda x: int(x.split('_')[1].split('.')[0]))
+
+    # Prepare page data
+    pages = []
+    for i, thumb in enumerate(thumbnails):
+        pages.append({
+            'number': i + 1,
+            'url': f"{thumbnails_url}{thumb}"
+        })
+        
+    context = {
+        'session': session,
+        'pages': pages,
+        'fonts': settings.ESIGN_SIGNATURE_FONTS,
+    }
+    
+    # Determine which template to use
+    use_external_template = (session.metadata.get('source') == 'api') or (not is_owner)
+    template = 'esign/sign_external.html' if use_external_template else 'esign/sign.html'
+    
+    return render(request, template, context)
+
+
 def verify_otp_page(request, session_id):
     """Page to enter OTP"""
     session = get_object_or_404(SignSession, id=session_id)
@@ -130,7 +200,12 @@ def verify_otp_page(request, session_id):
     if session.status == 'otp_verified' or session.status == 'signing':
         return redirect('esign:sign', session_id=session.id)
         
-    return render(request, 'esign/verify_otp.html', {'session': session})
+    # Determine which template to user
+    is_owner = request.user.is_authenticated and session.user == request.user
+    use_external_template = (session.metadata.get('source') == 'api') or (not is_owner)
+    
+    template = 'esign/verify_otp_external.html' if use_external_template else 'esign/verify_otp.html'
+    return render(request, template, {'session': session})
 
 
 @require_http_methods(["POST"])
@@ -212,64 +287,8 @@ def resend_otp(request, session_id):
     return redirect('esign:verify_otp_page', session_id=session.id)
 
 
-def sign_document(request, session_id):
-    """Public signing page"""
-    # For MVP, we assume logged in user is signing their own doc
-    if not request.user.is_authenticated:
-        return redirect('accounts:login')
-        
-    session = get_object_or_404(SignSession, id=session_id)
-    
-    # Check if user owns session
-    if session.user != request.user:
-        messages.error(request, "You don't have permission to view this session.")
-        return redirect('dashboard:home')
-        
-    # Security check: Must be verified
-    if session.status == 'created' or session.status == 'otp_sent':
-        return redirect('esign:verify_otp_page', session_id=session.id)
-        
-    # Generate thumbnails if needed
-    from .utils.pdf_processor import PDFProcessor
-    from django.conf import settings
-    import os
-    
-    thumbnails_dir = os.path.join(settings.MEDIA_ROOT, 'esign', 'thumbnails', str(session.id))
-    # Use forward slashes for URLs
-    thumbnails_url = f"{settings.MEDIA_URL}esign/thumbnails/{session.id}/"
-    
-    if not os.path.exists(thumbnails_dir):
-        try:
-            processor = PDFProcessor(file_path=session.original_pdf.path)
-            thumbnails = processor.generate_thumbnails(thumbnails_dir)
-            processor.close()
-        except Exception as e:
-            messages.error(request, f"Error processing PDF: {str(e)}")
-            return redirect('dashboard:home')
-    else:
-        # List existing thumbnails
-        thumbnails = sorted([f for f in os.listdir(thumbnails_dir) if f.endswith('.png')], 
-                          key=lambda x: int(x.split('_')[1].split('.')[0]))
-
-    # Prepare page data
-    pages = []
-    for i, thumb in enumerate(thumbnails):
-        pages.append({
-            'number': i + 1,
-            'url': f"{thumbnails_url}{thumb}"
-        })
-        
-    context = {
-        'session': session,
-        'pages': pages,
-        'fonts': settings.ESIGN_SIGNATURE_FONTS,
-    }
-    return render(request, 'esign/sign.html', context)
-
-
 @require_http_methods(["POST"])
 def save_signature(request, session_id):
-    """Save signature (draw/upload/type)"""
     import json
     from .utils.signature_renderer import SignatureRenderer
     from .models import Signature, SignSession, AuditEvent
@@ -304,12 +323,19 @@ def save_signature(request, session_id):
         filename = f'signature_{uuid.uuid4().hex[:8]}.png'
         signature_file = SignatureRenderer.save_signature_image(image, filename=filename)
         
+        if request.user.is_authenticated:
+            signer_name = request.user.get_full_name() or request.user.username
+            signer_email = request.user.email
+        else:
+            signer_name = session.signer_name
+            signer_email = session.signer_email
+
         signature = Signature.objects.create(
             session=session,
             method=method,
             signature_image=signature_file,
-            signer_name=request.user.get_full_name() or request.user.username,
-            signer_email=request.user.email,
+            signer_name=signer_name,
+            signer_email=signer_email,
             ip_address=get_client_ip(request),
             user_agent=request.META.get('HTTP_USER_AGENT', '')
         )
@@ -492,16 +518,25 @@ def status_page(request, session_id):
     """Status page showing signing progress and download link"""
     session = get_object_or_404(SignSession, id=session_id)
     
-    # Check ownership
-    if request.user.is_authenticated and session.user != request.user:
-        messages.error(request, "You don't have permission to view this session.")
-        return redirect('dashboard:home')
+    # Check ownership or if accessed via public link context (though normally status page is protected, for API flow we might want a public success page)
+    # The requirement is that "Download Signed PDF" and "Sign Another" buttons should be removed for API users.
+    
+    is_owner = request.user.is_authenticated and session.user == request.user
+    use_external_template = (session.metadata.get('source') == 'api') or (not is_owner)
+    
+    if not is_owner and not use_external_template:
+         # If neither owner nor external flow (this case shouldn't happen often if logic maps correctly, but as safeguard)
+         messages.error(request, "You don't have permission to view this session.")
+         return redirect('dashboard:home')
     
     context = {
         'session': session,
         'page_title': 'Document Status',
+        'is_external': use_external_template
     }
-    return render(request, 'esign/status.html', context)
+    
+    template = 'esign/status_external.html' if use_external_template else 'esign/status.html'
+    return render(request, template, context)
 
 
 def session_status(request, session_id):

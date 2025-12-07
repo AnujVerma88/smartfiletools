@@ -92,10 +92,20 @@ def create_webhook_payload(obj):
         }
 
         if obj.status == 'signed' and obj.signed_pdf:
+             import base64
+             try:
+                 obj.signed_pdf.open('rb')
+                 pdf_content = obj.signed_pdf.read()
+                 pdf_base64 = base64.b64encode(pdf_content).decode('utf-8')
+                 obj.signed_pdf.close()
+             except Exception:
+                 pdf_base64 = None
+                 
              payload['signed_file'] = {
                 'name': obj.original_filename, # Or signed filename
                 'download_url': f'/api/v1/esign/download/{obj.id}/',
-                'expires_at': obj.expires_at.isoformat()
+                'expires_at': obj.expires_at.isoformat(),
+                'content_base64': pdf_base64
             }
         
         return payload
@@ -112,10 +122,19 @@ def trigger_webhook(obj, merchant=None):
 
     # Get merchant if not provided
     if merchant is None:
-        if hasattr(obj.user, 'api_merchant'):
+        if obj.user and hasattr(obj.user, 'api_merchant'):
             merchant = obj.user.api_merchant
+        # Start of fix for external users
+        elif isinstance(obj, SignSession) and obj.metadata.get('merchant_id'):
+            # Fallback for API sessions where user might be generic or session is owned by someone else
+            try:
+                merchant = APIMerchant.objects.get(id=obj.metadata.get('merchant_id'))
+            except APIMerchant.DoesNotExist:
+                logger.warning(f"Merchant ID {obj.metadata.get('merchant_id')} not found for session {obj.id}")
+                return None
+        # End of fix
         else:
-            logger.warning(f"No merchant found for object {obj.id}")
+            logger.warning(f"No merchant found for object {obj.id} (Metadata: {getattr(obj, 'metadata', {})})")
             return None
     
     # Check if webhooks are enabled
@@ -145,10 +164,17 @@ def trigger_webhook(obj, merchant=None):
 
     webhook = WebhookDelivery.objects.create(**webhook_kwargs)
     
-    logger.info(
-        f"Created webhook delivery #{webhook.id} for object {obj.id} "
-        f"to {merchant.company_name}"
-    )
+    # Prepare payload for logging (truncate base64)
+    log_payload = payload.copy()
+    if 'signed_file' in log_payload and 'content_base64' in log_payload['signed_file']:
+        b64_len = len(log_payload['signed_file']['content_base64'] or '')
+        log_payload['signed_file']['content_base64'] = f"<Base64 Data: {b64_len} chars truncated>"
+
+    logger.info("="*50)
+    logger.info(f"WEBHOOK TRIGGERED & STORED IN MODEL (ID: {webhook.id})")
+    logger.info(f"Target URL: {merchant.webhook_url}")
+    logger.info(f"Payload Preview: {json.dumps(log_payload, indent=2)}")
+    logger.info("="*50)
     
     # Queue webhook delivery task
     deliver_webhook.delay(webhook.id)
