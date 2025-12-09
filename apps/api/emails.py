@@ -316,3 +316,78 @@ https://smarttoolpdf.com
     except Exception as e:
         logger.error(f"Failed to send plan change email to {merchant.contact_email}: {str(e)}")
         return False
+
+def send_api_key_email(merchant, key_name, env, plain_key):
+    """
+    Send API Key part 1 (The Key ID) to merchant.
+    """
+    try:
+        subject = f'Your API Key ID - {key_name} ({env})'
+        
+        message = f"""
+Dear {merchant.company_name},
+
+A new API Key has been generated for your account.
+
+Key Details:
+- Name: {key_name}
+- Environment: {env}
+- API Key ID: {plain_key}
+
+For security reasons, the API Secret is sent in a separate email.
+Please combine these to authenticate your requests.
+
+Best regards,
+The SmartToolPDF Team
+        """.strip()
+        
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@smarttoolpdf.com',
+            recipient_list=[merchant.contact_email],
+            fail_silently=False,
+        )
+        logger.info(f"API Key email sent to {merchant.contact_email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send API Key email: {str(e)}")
+        return False
+
+
+def send_api_secret_email(merchant, key_name, env, plain_secret):
+    """
+    Send API Key part 2 (The Secret) to merchant.
+    """
+    try:
+        subject = f'Your API Secret - {key_name} ({env})'
+        
+        message = f"""
+Dear {merchant.company_name},
+
+Here is the API Secret for your new key.
+
+Key Details:
+- Name: {key_name}
+- Environment: {env}
+- API Secret: {plain_secret}
+
+IMPORTANT: This secret will NOT be shown again. Please save it securely immediately.
+Do not share this email or its contents with anyone.
+
+Best regards,
+The SmartToolPDF Team
+        """.strip()
+        
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@smarttoolpdf.com',
+            recipient_list=[merchant.contact_email],
+            fail_silently=False,
+        )
+        logger.info(f"API Secret email sent to {merchant.contact_email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send API Secret email: {str(e)}")
+        return False

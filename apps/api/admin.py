@@ -13,6 +13,7 @@ from .models import (
     APIUsageLog,
     WebhookDelivery
 )
+from .emails import send_api_key_email, send_api_secret_email
 
 
 @admin.register(APIAccessRequest)
@@ -465,6 +466,43 @@ class APIKeyAdmin(admin.ModelAdmin):
             messages.SUCCESS
         )
     activate_keys.short_description = 'Activate selected keys'
+
+    def save_model(self, request, obj, form, change):
+        """Generate key pair for new API keys."""
+        if not change and not obj.key:
+            plain_key, plain_secret = obj.generate_key_pair()
+            obj.save()
+            
+            # Send credentials via email (separately)
+            email_status = []
+            if send_api_key_email(obj.merchant, obj.name, obj.environment, plain_key):
+                email_status.append("Key email sent.")
+            else:
+                email_status.append("Failed to send Key email.")
+                
+            if send_api_secret_email(obj.merchant, obj.name, obj.environment, plain_secret):
+                email_status.append("Secret email sent.")
+            else:
+                email_status.append("Failed to send Secret email.")
+
+            # Show credentials to user
+            self.message_user(
+                request,
+                format_html(
+                    'API Key generated successfully!<br>'
+                    '<strong>Key:</strong> {}<br>'
+                    '<strong>Secret:</strong> {}<br>'
+                    '<em>Please save these credentials now. They have also been sent to the merchant contact email ({}) in two separate emails.<br>Status: {}</em>',
+                    plain_key,
+                    plain_secret,
+                    obj.merchant.contact_email,
+                    " ".join(email_status)
+                ),
+                messages.SUCCESS,
+                fail_silently=True
+            )
+        else:
+            super().save_model(request, obj, form, change)
 
 
 @admin.register(APIUsageLog)

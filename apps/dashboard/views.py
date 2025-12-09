@@ -533,7 +533,10 @@ def download_invoice_view(request, invoice_id):
     from apps.accounts.invoice_generator import generate_invoice_pdf
     
     try:
-        invoice = Invoice.objects.get(id=invoice_id, user=request.user)
+        if request.user.is_staff:
+            invoice = Invoice.objects.get(id=invoice_id)
+        else:
+            invoice = Invoice.objects.get(id=invoice_id, user=request.user)
     except Invoice.DoesNotExist:
         raise Http404("Invoice not found")
     
